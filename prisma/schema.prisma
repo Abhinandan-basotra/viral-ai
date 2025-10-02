@@ -1,0 +1,100 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id        Int     @id  @default(autoincrement())
+  username  String  @unique
+  email     String  @unique
+  password  String
+  projects Project[]
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      Int
+  title       String
+  description String?
+  script      String
+  scenes      Scene[]
+  audio       Audio[]
+  assets      Asset[]
+  renderJobs  RenderQueue[]
+  status      String    @default("Generating")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Scene {
+  id            String        @id @default(cuid())
+  project       Project       @relation(fields: [projectId], references: [id])
+  projectId     String
+  sceneNumber   Int
+  text          String
+  keywords      String[]      
+  duration      Int          
+  visualPrompt  String?
+  imageAssets   Asset[]       @relation("SceneImages")
+  audioAssets   Audio[]       @relation("SceneAudios")      
+  renderJobs    RenderQueue[] 
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+
+model Asset {
+  id          String   @id @default(cuid())
+  project     Project  @relation(fields: [projectId], references: [id])
+  projectId   String
+  type        String 
+  url         String
+  status      String
+  scenes      Scene[]  @relation("SceneImages")
+  createdAt   DateTime @default(now())
+}
+
+model Audio {
+  id        String   @id @default(cuid())
+  project   Project  @relation(fields: [projectId], references: [id])
+  projectId String
+  scene     Scene?   @relation(fields: [sceneId], references: [id], name: "SceneAudios")
+  sceneId   String?
+  type      String   
+  text      String?
+  voiceId   String?
+  emotion   String?
+  speed     Float?
+  pitch     Float?
+  url       String
+  status    String
+  duration  Int?     // in seconds
+  createdAt DateTime @default(now())
+}
+
+model RenderQueue {
+  id        String   @id @default(cuid())
+  project   Project  @relation(fields: [projectId], references: [id])
+  projectId String
+  scene     Scene?   @relation(fields: [sceneId], references: [id])
+  sceneId   String?
+  jobType   String   // "imageGeneration", "audioSync", "videoRender"
+  priority  Int      @default(0)
+  status    String   @default("pending") // "pending", "inProgress", "completed", "failed"
+  attempts  Int      @default(0)
+  workerId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
