@@ -34,6 +34,7 @@ model Project {
   assets      Asset[]
   renderJobs  RenderQueue[]
   status      String    @default("Generating")
+  expectedLength Int?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
@@ -43,10 +44,9 @@ model Scene {
   project       Project       @relation(fields: [projectId], references: [id])
   projectId     String
   sceneNumber   Int
-  text          String
-  keywords      String[]      
-  duration      Int          
-  visualPrompt  String?
+  description   String    
+  startTime     String           // in seconds
+  endTime       String          // in seconds
   imageAssets   Asset[]       @relation("SceneImages")
   audioAssets   Audio[]       @relation("SceneAudios")      
   renderJobs    RenderQueue[] 
