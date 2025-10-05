@@ -93,13 +93,14 @@ Your task is to break down the given script into a list of visually compelling s
 
         const generatedScenesRes = await res.json();
         const generatedText = generatedScenesRes?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        
         const cleanedText = generatedText
             .replace(/```json/g, '')  
             .replace(/```/g, '')    
             .trim();
         const generatedJson = JSON.parse(cleanedText);
         const generatedScenes = generatedJson.scenes;
-        await updateStatus(projectId, "Scenes Generated");
+        updateStatus(projectId, "Scenes Generated");
 
         for (const scene of generatedScenes) {
             //adding scene to the database
@@ -114,7 +115,16 @@ Your task is to break down the given script into a list of visually compelling s
             });
 
             //making assets according to scene
-            const res = await fetch(`${baseUrl}/`)
+            // const res = await fetch(`${baseUrl}/api/v1/video/generateAssets`,{
+            //     method: 'POST',
+            //     headers: {
+            //         "Content-Type": "application/json",
+            //         "Accept": "application/json"
+            //     },
+            //     body: scene
+            // })
+            // const data = await res.json();
+            // console.log(data.assets);
         }
 
         return NextResponse.json({ message: "Scenes and Images Generated", success: true, scenes: generatedScenes });
