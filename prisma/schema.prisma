@@ -72,16 +72,18 @@ model Audio {
   projectId String
   scene     Scene?   @relation(fields: [sceneId], references: [id], name: "SceneAudios")
   sceneId   String?
-  type      String   
+  type      String // "narration", "background"  
   text      String?
   voiceId   String?
   emotion   String?
   speed     Float?
-  pitch     Float?
-  url       String
+  voice_stability Float?
+  voice_similarity_boost Float?
+  url       String?
   status    String
   duration  Int?     // in seconds
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model RenderQueue {
@@ -97,4 +99,11 @@ model RenderQueue {
   workerId  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Tunes{
+  id        Int     @id  @default(autoincrement())
+  name      String  
+  description String?
+  url       String  
 }

@@ -58,43 +58,38 @@
 
 import prisma from "@/app/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+import { uploadToCloudinary } from "../../uploadFiles/route";
+
 //temporary
 export async function POST(req: NextRequest) {
     try {
-        const body = await req.json();
-        const url = body.url;
-        const projectId = body.projectId;
-        const type = body.type;
-
-        const cloudinaryRes = await fetch(`${process.env.BASE_URL}/api/v1/uploadFiles`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': "application/json",
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                imageUrl: url
-            })
-        })
-
-        const resData = await cloudinaryRes.json();
-
-        if (!cloudinaryRes.ok) {
-            return NextResponse.json(
-                { message: "Failed to upload to Cloudinary", success: false, error: resData },
-                { status: 500 }
-            );
+        const formData = await req.formData();
+        const file = formData.get("file") as Blob;
+        const projectIdValue = formData.get("projectId");
+        if (!projectIdValue) {
+            return NextResponse.json({ message: "Missing projectId", success: false }, { status: 400 });
         }
+        const projectId = projectIdValue.toString();
+        const typeValue = formData.get("type");
+        if(!typeValue) return NextResponse.json({ message: "Missing typeValue", success: false }, { status: 400 });
+        const type = typeValue.toString();
+        const folder = "default_folder"
+        const sceneId = formData.get('sceneId')?.toString();
 
-        await prisma.asset.create({
+        const imageUrl = await uploadToCloudinary(file, folder);
+
+        const asset = await prisma.asset.create({
             data: {
                 projectId: projectId,
                 type: type,
-                url: resData.url,
-                status: "uploaded"
-            }
-        })
-        return NextResponse.json({ message: "Asset stored", success: false });
+                url: imageUrl,
+                status: "Image Stored",
+                scenes: {
+                    connect: {id: sceneId}
+                }
+            },
+        });
+        return NextResponse.json({ message: "Asset stored", success: true, asset });
     } catch (error) {
         console.log(error);
         return NextResponse.json({ message: "Internal Server Error", success: false }, { status: 500 })

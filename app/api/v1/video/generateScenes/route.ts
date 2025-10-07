@@ -102,6 +102,7 @@ Your task is to break down the given script into a list of visually compelling s
         const generatedScenes = generatedJson.scenes;
         updateStatus(projectId, "Scenes Generated");
 
+        updateStatus(projectId, "Generating Assets");
         for (const scene of generatedScenes) {
             //adding scene to the database
             await prisma.scene.create({
@@ -115,18 +116,19 @@ Your task is to break down the given script into a list of visually compelling s
             });
 
             //making assets according to scene
-            // const res = await fetch(`${baseUrl}/api/v1/video/generateAssets`,{
-            //     method: 'POST',
-            //     headers: {
-            //         "Content-Type": "application/json",
-            //         "Accept": "application/json"
-            //     },
-            //     body: scene
-            // })
-            // const data = await res.json();
-            // console.log(data.assets);
+            const res = await fetch(`${baseUrl}/api/v1/video/generateAssets`,{
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: scene
+            })
+            const data = await res.json();
+            console.log(data.assets);
         }
-
+        updateStatus(projectId, "Assets Generated");
+        
         return NextResponse.json({ message: "Scenes and Images Generated", success: true, scenes: generatedScenes });
     } catch (error) {
         console.log(error);

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Audio" ALTER COLUMN "url" DROP NOT NULL;
