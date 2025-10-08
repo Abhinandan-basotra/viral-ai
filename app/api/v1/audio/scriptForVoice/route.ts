@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db";
+import { updateStatus } from "../../video/generateScenes/route";
 
 export async function POST(req: NextRequest) {
     try {
@@ -16,6 +17,7 @@ export async function POST(req: NextRequest) {
                 id: projectId
             }
         })
+        updateStatus(projectId, "Generating Voiceover Script");
         let combined_script = "";
         for (const scene of scenes) {
             combined_script += `Scene${scene.sceneNumber}: ${scene.description}\n`
@@ -99,6 +101,8 @@ Return JSON in the following format exactly:
                 }
             })
         }
+
+        updateStatus(projectId, "Voiceover Script Generated");
         
         return NextResponse.json({ message: "script Generated for voice over", success: true});
 

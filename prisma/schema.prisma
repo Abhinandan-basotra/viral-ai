@@ -47,6 +47,7 @@ model Scene {
   description   String    
   startTime     String           // in seconds
   endTime       String          // in seconds
+  finalUrl     String?         // final rendered video url
   imageAssets   Asset[]       @relation("SceneImages")
   audioAssets   Audio[]       @relation("SceneAudios")      
   renderJobs    RenderQueue[] 
@@ -83,7 +84,7 @@ model Audio {
   status    String
   duration  Int?     // in seconds
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @updatedAt   @default(now())
 }
 
 model RenderQueue {

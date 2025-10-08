@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Audio" ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+
+-- AlterTable
+ALTER TABLE "Scene" ADD COLUMN     "finalUrl" TEXT;

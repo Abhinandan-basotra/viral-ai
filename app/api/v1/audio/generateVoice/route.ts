@@ -3,6 +3,7 @@ import prisma from "@/app/lib/db";
 import { cloudinary } from "@/app/lib/cloudinary";
 import { uploadToCloudinary } from "../../uploadFiles/route";
 import { uploadAudioToCloudinary } from "../../uploadAudio/route";
+import { updateStatus } from "../../video/generateScenes/route";
 
 export async function POST(req: Request) {
     try {
@@ -19,6 +20,7 @@ export async function POST(req: Request) {
         const apikey = process.env.VOICE_GENERATION_KEY;
         if (!apikey) return NextResponse.json({ message: "api key is not present", success: false }, { status: 404 })
 
+        updateStatus(projectId, "Generating Voiceover");
         for (const audio of audios) {
             const text = audio.text;
             const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voice}`, {
@@ -42,18 +44,21 @@ export async function POST(req: Request) {
             if (!res.ok) {
                 const errorText = await res.text();
                 console.error("❌ ElevenLabs API error:", errorText);
-                continue; // skip this one instead of breaking everything
             }
 
             const arrayBuffer = await res.arrayBuffer();
             const buffer = Buffer.from(arrayBuffer);
 
-            const cloudUrl: string = await uploadAudioToCloudinary(buffer, "elevenlabs_audios");
+            const cloudUrl = await uploadAudioToCloudinary(buffer, "elevenlabs_audios");
             await prisma.audio.update({
                 where: { id: audio.id },
-                data: { url: cloudUrl },
+                data: { 
+                    url: cloudUrl.url,
+                    duration: cloudUrl.duration
+                },
             });
         }
+        updateStatus(projectId, "Voiceover Generated");
 
         return NextResponse.json({ mesaage: "Audio stored Successfully" });
 

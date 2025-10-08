@@ -1,6 +1,11 @@
 import { cloudinary } from "@/app/lib/cloudinary";
 
-export async function uploadAudioToCloudinary(buffer: Buffer, folder = "audios") : Promise<string> {
+interface UploadResult {
+  url: string;
+  duration: number;
+}
+
+export async function uploadAudioToCloudinary(buffer: Buffer, folder = "audios") : Promise<UploadResult> {
   if (!buffer || !(buffer instanceof Buffer)) throw new Error("No buffer provided");
 
   return new Promise((resolve, reject) => {
@@ -12,7 +17,12 @@ export async function uploadAudioToCloudinary(buffer: Buffer, folder = "audios")
       },
       (error, result) => {
         if (error || !result) return reject(error || "Upload failed");
-        resolve(result.secure_url);
+        resolve({
+          url: result.secure_url,
+          duration: result.duration
+        
+        });
+        
       }
     );
     stream.end(buffer);
