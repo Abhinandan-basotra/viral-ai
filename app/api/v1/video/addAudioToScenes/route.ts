@@ -98,8 +98,14 @@ export async function POST(req: NextRequest) {
         const scenes = await prisma.scene.findMany({
             where: {
                 projectId: projectId
+            },
+            orderBy: {
+                sceneNumber: "asc"
             }
         })
+
+        console.log(scenes);
+        
 
         const outputs = [];
         let previousEndTime = 0;
