@@ -102,6 +102,7 @@ export async function POST(req: NextRequest) {
         })
 
         const outputs = [];
+        let previousEndTime = 0;
         for (let i = 0; i < assets.length; i++) {
             const imagePath = `scene_${i + 1}.jpg`;
             const audioPath = `audio_${i + 1}.mp3`;
@@ -118,19 +119,19 @@ export async function POST(req: NextRequest) {
             fs.unlinkSync(imagePath);
             fs.unlinkSync(audioPath);
 
-            const prevEnd = i === 0 ? 0 : Number(scenes[i - 1].endTime.replace(/s$/, '')) || 0;
-            const startTime = `${prevEnd}s`;
-            const endTime = `${prevEnd + output.duration}s`;
+            const startTime = previousEndTime;
+            const endTime = startTime + Number(duration);
             await prisma.scene.update({
                 where: {
                     id: scenes[i].id
                 },
                 data: {
                     finalUrl: output.url,
-                    startTime: startTime,
-                    endTime: endTime
+                    startTime: `${startTime}s`,
+                    endTime: `${endTime}s`
                 }
             })
+            previousEndTime = endTime
         }
 
         return NextResponse.json({ message: "done" })

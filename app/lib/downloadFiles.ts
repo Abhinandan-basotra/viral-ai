@@ -15,7 +15,6 @@ export async function downloadFile(url: string, outputPath: string): Promise<voi
     });
 
     fs.writeFileSync(outputPath, response.data);
-    console.log(`✅ Downloaded: ${outputPath}`);
   } catch (error) {
     console.error(`❌ Failed to download ${url}:`, error);
     throw error;
