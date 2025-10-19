@@ -146,16 +146,16 @@ export async function POST(req: NextRequest) {
                 endTime: endTime,
                 startTime: startTime
             });
-            // await prisma.scene.update({
-            //     where: {
-            //         id: scenes[i].id
-            //     },
-            //     data: {
-            //         finalUrl: output.url,
-            //         startTime: `${startTime}s`,
-            //         endTime: `${endTime}s`
-            //     }
-            // })
+            await prisma.scene.update({
+                where: {
+                    id: scenes[i].id
+                },
+                data: {
+                    finalUrl: output.url,
+                    startTime: `${startTime}s`,
+                    endTime: `${endTime}s`
+                }
+            })
             previousEndTime = endTime
         }
 
@@ -173,11 +173,8 @@ export async function POST(req: NextRequest) {
                 projectId
             })
         })
-
         const resData = await res.json();
-
         return NextResponse.json({ message: resData.message, url: resData.url})
-
     } catch (error) {
         console.log(error);
         return NextResponse.json({ message: "Internal Server Error", success: false }, { status: 500 })
