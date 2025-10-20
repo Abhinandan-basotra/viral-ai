@@ -22,7 +22,24 @@ export async function POST(req: NextRequest) {
         const body = await req.json();  
         const idea = body.idea;
         const expectedVideoLength = body.expectedVideoLength;
-        const basePrompt = `You are a professional short-form content scriptwriter for Instagram Reels, YouTube Shorts, and TikTok. Write a powerful and cinematic narration script in English (${expectedVideoLength} seconds) for voiceover. \n\nRequirements:\n- Start with a strong hook in the first line.\n- Build up the concept with vivid, punchy narration.\n- Add a twist or thought-provoking question near the end.\n- End with a strong, impactful closing line.\n- Use short sentences. No dialogues.\n- Do NOT include scenes, camera directions, or screenplay formatting. The output must be a single continuous voiceover narration, like spoken commentary.\n\nStory idea: ${idea}.\nTone: Futuristic and suspenseful.`
+        const basePrompt = `
+Write a cinematic-style voiceover narration (~${Math.floor(expectedVideoLength * 2.5)} words, roughly ${expectedVideoLength}s) for a YouTube short.
+
+Topic: ${idea}
+
+Guidelines:
+- Write only the narration as plain text paragraphs.
+- Do NOT include stage directions, sound cues, or screenplay formatting (no [SCENE], (SOUND:), or NARRATOR labels).
+- Use natural, flowing sentences that sound powerful when spoken aloud.
+- Begin with a dramatic hook about the event.
+- Build momentum by describing the response, courage, or outcome.
+- End with an inspiring and emotional note.
+- Maintain a serious, respectful, and cinematic tone.
+
+Example of desired format:
+“In September 2021, a shocking attack rocked Pahalgam, leaving the nation in disbelief. But India responded with swift determination…”
+`;
+
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API}`, {
             method: 'POST',
             headers: {
@@ -37,6 +54,9 @@ export async function POST(req: NextRequest) {
                 ],
             })
         })
+        if(!res.ok){
+            return NextResponse.json({message: "Failed to generate script", success: false}, {status: 500});
+        }
         const data = await res.json();
         const title = idea.split(" ").slice(0, 4).join(" ");
         const generatedScript: string = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -59,7 +79,7 @@ export async function POST(req: NextRequest) {
 
     } catch (error) {
         console.log(error);
-        return NextResponse.json({ message: "Internal Server Error", success: false })
+        return NextResponse.json({ message: "Internal Server Error", success: false }, {status: 500})
     }
 }
 
