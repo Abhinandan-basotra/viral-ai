@@ -16,7 +16,7 @@ export async function POST(req: NextRequest){
 
         const generatedTune = await prisma.tunes.create({
             data: {
-                url: cloudUrl,
+                url: cloudUrl.url,
                 name: String(name),
                 description: String(description)
             }
@@ -26,5 +26,15 @@ export async function POST(req: NextRequest){
     } catch (error) {
         console.log(error);
         return NextResponse.json({message: "Internal Server Error", success: false}, {status: 500});
+    }
+}
+
+export async function GET(req: NextRequest){
+    try {
+        const tunes = await prisma.tunes.findMany();
+        return NextResponse.json({message: "tunes fetched successfully", success: true, tunes});
+    } catch (error) {
+        console.log(error);
+        return NextResponse.json({message: "Internal Server Error", success: false}, {status: 500})
     }
 }
