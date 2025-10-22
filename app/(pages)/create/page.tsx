@@ -239,7 +239,8 @@ export default function StoryCreationForm() {
                                 {script.length}/1200
                             </p>
                         </Card>
-
+                    
+                        {/* Generation Preset */}
                         <Card className="bg-gray-900 border-gray-800 p-6">
                             <Label className="text-white mb-4 block font-semibold">Choose a generation preset</Label>
                             <div className="grid grid-cols-4 gap-4">

@@ -56,42 +56,44 @@
 // }
 // #endregion
 
+
+//temporary
 import prisma from "@/app/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { uploadToCloudinary } from "../../uploadFiles/route";
+import OpenAI from "openai";
+import fs from 'fs'
 
-//temporary
-export async function POST(req: NextRequest) {
+export async function POST(req: NextRequest){
     try {
-        const formData = await req.formData();
-        const file = formData.get("file") as Blob;
-        const projectIdValue = formData.get("projectId");
-        if (!projectIdValue) {
-            return NextResponse.json({ message: "Missing projectId", success: false }, { status: 400 });
-        }
-        const projectId = projectIdValue.toString();
-        const typeValue = formData.get("type");
-        if(!typeValue) return NextResponse.json({ message: "Missing typeValue", success: false }, { status: 400 });
-        const type = typeValue.toString();
-        const folder = "default_folder"
-        const sceneId = formData.get('sceneId')?.toString();
+        const data = await req.json();
+        const description = data.description;
+        const type = data.type;//generation Preset
+        const style = data.style;
+        const aspectRatio = data.aspectRatio;
+        const projectId = data.projectId;
+        const sceneId = data.sceneId;
 
-        const imageUrl = await uploadToCloudinary(file, folder);
+        const prompt = `
+            Generate an image based on the following details:
+            Description: ${description}
+            Style / Generation Preset: ${style} (e.g., 4K realistic, cinematic, anime, digital art, etc.)
+            Aspect Ratio: ${aspectRatio}
+            Project ID: ${projectId}
+            Scene ID: ${sceneId}
+            Type: ${type}
 
-        const asset = await prisma.asset.create({
-            data: {
-                projectId: projectId,
-                type: type,
-                url: imageUrl,
-                status: "Image Stored",
-                scenes: {
-                    connect: {id: sceneId}
-                }
-            },
-        });
-        return NextResponse.json({ message: "Asset stored", success: true, asset });
+            The image should visually represent the scene described, following the specified generation preset style and aspect ratio. 
+            Ensure the final result looks coherent, visually appealing, and accurately reflects the given description and mood.
+        `;
+
+        const response = await fetch(`https://image.pollinations.ai/prompt/${prompt}`)
+        const buffer = await response.arrayBuffer();
+        const imageUrl = await uploadToCloudinary(new Blob([buffer]), "default_folder");
+        return NextResponse.json({ message: "Image generated", success: true, imageUrl });
+
     } catch (error) {
         console.log(error);
-        return NextResponse.json({ message: "Internal Server Error", success: false }, { status: 500 })
+        return NextResponse.json({message: "Internal Server Error", success: false}, {status: 500})
     }
 }

@@ -16,8 +16,8 @@ export async function POST(req: NextRequest) {
     try {
         const data = await req.json();
         const projectId = data.projectId;
-        const type = data.type //type = animate, photo
-        const generationPreset = data.generationPreset; //4k realistic, line art, cartoon etc
+        const type = data.type
+        const generationPreset = data.generationPreset;
         const aspectRatio = data.aspectRatio;
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 
@@ -125,7 +125,11 @@ Your task is to break down the given script into a list of visually compelling s
                 body: scene
             })
             const data = await res.json();
-            console.log(data.assets);
+            
+            //generate script for voice
+
+
+            //generate 
         }
         updateStatus(projectId, "Assets Generated");
         
