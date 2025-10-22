@@ -6,6 +6,7 @@ import { Card } from "./ui/card";
 import { Textarea } from "./ui/textarea";
 import { toast } from "react-toastify";
 import { BASE_URL } from "@/lib/constants";
+import { Spinner } from "./ui/spinner";
 
 export default function GenerateScript({ setOpenScriptPage, generatedScript }: any) {
     const [selectedDuration, setSelectedDuration] = useState<string | null>(null);
@@ -102,7 +103,7 @@ export default function GenerateScript({ setOpenScriptPage, generatedScript }: a
                             onClick={handleGenerate}
                         >
                             {
-                                loading ? "Generating" : "Generate Script"
+                                loading ? (<div className="flex justify-center items-center gap-2"><span>Generating</span> <Spinner/> </div>) : "Generate Script"
                             }
                         </Button>
                     </div>
