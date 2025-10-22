@@ -6,13 +6,12 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ChevronDown, Pause, Play, PlayIcon, Sparkles, Wand2, WandSparkles } from "lucide-react"
+import { ChevronDown, Pause, Play, PlayIcon, Proportions, RectangleHorizontal, RectangleVertical, Sparkles, Square, Wand2, WandSparkles } from "lucide-react"
 import { Separator } from "@/components/ui/separator";
 import GenerateScript from "@/components/GenerateScript";
 import { BASE_URL } from "@/lib/constants";
 import { LoaderThree } from "@/components/ui/loader";
 import AllVoices from "@/components/AllVoices";
-
 interface Tune {
     id: number;
     name: string;
@@ -74,6 +73,7 @@ export default function StoryCreationForm() {
     const [prompt, setPrompt] = useState("")
     const [selectedGenres, setSelectedGenres] = useState<string[]>([])
     const [selectedTones, setSelectedTones] = useState<string[]>([])
+    const [selectedVoices, setSelectedVoices] = useState<string[]>([])
     const [isGenerating, setIsGenerating] = useState(false)
     const [openScriptPage, setOpenScriptPage] = useState(false);
     const [script, setScript] = useState<string>("");
@@ -83,6 +83,7 @@ export default function StoryCreationForm() {
     const [voices, setVoices] = useState<Voices[]>([]);
     const [loading, setLoading] = useState(false);
     const [openVoices, setOpenVoices] = useState(false);
+    const [aspectRatio, setAspectRatio] = useState("9:16");
 
     const toggleGenre = (genre: string) => {
         setSelectedGenres((prev) => (prev.includes(genre) ? prev.filter((g) => g !== genre) : [genre]))
@@ -90,6 +91,10 @@ export default function StoryCreationForm() {
 
     const toggleTone = (tone: string) => {
         setSelectedTones((prev) => (prev.includes(tone) ? prev.filter((t) => t !== tone) : [tone]))
+    }
+
+    const toggleVoice = (voiceName: string) => {
+        setSelectedVoices((prev) => (prev.includes(voiceName) ? prev.filter((v) => v !== voiceName) : [voiceName]))
     }
 
     const handleGenerate = async () => {
@@ -195,7 +200,7 @@ export default function StoryCreationForm() {
                 playAudio={playAudio} 
                 openVoices={openVoices} 
                 setOpenVoices={setOpenVoices}
-                toggleVoice={toggleTone}
+                toggleVoice={toggleVoice}
                 />
             }
             <div className="flex flex-row">
@@ -308,13 +313,13 @@ export default function StoryCreationForm() {
                                     ) : (
                                         <>
                                             {voices.slice(0, 4).map((voice: Voices) => {
-                                                const isSelected = selectedTones.includes(voice.name);
+                                                const isSelected = selectedVoices.includes(voice.name);
                                                 const isPlaying = playingId === voice.voice_id;
 
                                                 return (
                                                     <Card
                                                         key={voice.voice_id}
-                                                        onClick={() => toggleTone(voice.name)}
+                                                        onClick={() => toggleVoice(voice.name)}
                                                         className={`relative cursor-pointer flex flex-col justify-between p-5 h-32 rounded-xl border border-gray-700 transition-all duration-300 
                                                 ${isSelected ? "ring-2 ring-yellow-500 bg-gray-800" : "hover:bg-gray-800"} 
                                                 ${isPlaying ? "shadow-lg shadow-yellow-500/30" : ""}
@@ -374,12 +379,54 @@ export default function StoryCreationForm() {
                             </div>
                         </Card>
 
+                        <Separator/>
+
+                        <div className="flex flex-col gap-4 ml-8">
+                            <div className="flex items-center gap-2">
+                            <Proportions/> <span>Aspect Ratio</span>
+                            </div>
+                            <div className="flex gap-2">
+                                <div className="border border-gray-600 h-13 w-auto flex items-center rounded-2xl gap-4 p-2">
+                                    <div className="flex items-center">
+                                        <Button 
+                                        className={"bg-transparent hover:bg-transparent cursor-pointer text-white " + (aspectRatio === "9:16" ? "bg-gray-700 hover:bg-gray-600" : "")}
+                                        onClick={() => {
+                                            setAspectRatio("9:16")
+                                        }}
+                                        >
+                                            <RectangleVertical color="white"/> <span>9:16</span>
+                                        </Button>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <Button 
+                                        className={"bg-transparent hover:bg-transparent cursor-pointer text-white " + (aspectRatio === "16:9" ? "bg-gray-700 hover:bg-gray-600" : "")}
+                                        onClick={() => {
+                                            setAspectRatio("16:9")
+                                        }}
+                                        >
+                                            <RectangleHorizontal color="white"/> <span>16:9</span>
+                                        </Button>
+                                    </div>
+                                    <div className="flex items-center">
+                                        <Button 
+                                        className= {"bg-transparent hover:bg-transparent cursor-pointer text-white " + (aspectRatio === "1:1" ? "bg-gray-700 hover:bg-gray-600" : "")}
+                                        onClick={() => {
+                                            setAspectRatio("1:1")
+                                        }}
+                                        >
+                                            <Square color="white"/> <span>1:1</span>
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
 
                         <div className="flex gap-4 pt-4">
                             <Button
                                 onClick={handleGenerate}
-                                disabled={!script || !prompt || isGenerating}
-                                className="flex-1 bg-white text-black hover:bg-gray-200 font-semibold py-6 text-base"
+                                disabled={isGenerating || !script || selectedVoices.length === 0 || !aspectRatio}
+                                className="flex-1 bg-white text-black hover:bg-gray-200 font-semibold py-6 text-base cursor-pointer"
                             >
                                 {isGenerating ? (
                                     <>
