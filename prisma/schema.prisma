@@ -29,6 +29,7 @@ model Project {
   title       String
   description String?
   script      String
+  progress    Int       @default(0)
   scenes      Scene[]
   audio       Audio[]
   assets      Asset[]
@@ -46,6 +47,7 @@ model Scene {
   projectId     String
   sceneNumber   Int
   description   String    
+  status        String        @default("Generating")
   startTime     String           // in seconds
   endTime       String          // in seconds
   finalUrl     String?         // final rendered video url

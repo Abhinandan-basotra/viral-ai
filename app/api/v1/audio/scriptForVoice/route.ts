@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db";
-import { updateStatus } from "../../video/generateScenes/route";
+import { updateProjectStatus } from "../../video/generateScenes/route";
 
 export async function POST(req: NextRequest) {
     try {
@@ -17,11 +17,12 @@ export async function POST(req: NextRequest) {
                 id: projectId
             }
         })
-        updateStatus(projectId, "Generating Voiceover Script");
+        updateProjectStatus(projectId, "Generating Voiceover Script");
         let combined_script = "";
         for (const scene of scenes) {
             combined_script += `Scene${scene.sceneNumber}: ${scene.description}\n`
         }
+
         let basePrompt = `You are a professional voice-over scriptwriter and you strictly use ElevenLabs v3 audio tags (as per ElevenLabs’ official list).  
 I will give you a scene-by-scene outline of a story.  
 Your job is to generate a **voice-over narration script** ready for Eleven v3, incorporating:
@@ -37,7 +38,7 @@ script:
 ${combined_script}
 expected-time: ${project?.expectedLength}
 overall-idea: ${project?.script}
-Return JSON in the following format exactly:
+Return only JSON in the following format exactly:
 {
   "voice_over_script": [
     {
@@ -57,7 +58,7 @@ Return JSON in the following format exactly:
 };
 `
         const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_2}`,
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -74,6 +75,17 @@ Return JSON in the following format exactly:
         const resFromGemini = await res.json();
         const generatedString = resFromGemini.candidates?.[0]?.content?.parts?.[0]?.text;
 
+
+        if (!generatedString) {
+            console.error("No valid text returned from Gemini:", resFromGemini);
+            return NextResponse.json({
+                message: "Gemini returned no content",
+                success: false,
+                rawResponse: resFromGemini
+            }, { status: 500 });
+        }
+
+
         let generatedJSON;
         try {
             generatedJSON = JSON.parse(generatedString);
@@ -81,10 +93,9 @@ Return JSON in the following format exactly:
             console.error("Failed to parse JSON from Gemini:", err);
             generatedJSON = { error: "Invalid JSON returned", raw: generatedString };
         }
-        console.log(generatedJSON);
-        
-        
-        for(const scene of scenes){
+
+
+        for (const scene of scenes) {
             const sceneId = scene.id;
             const sceneNumber = scene.sceneNumber;
             await prisma.audio.create({
@@ -93,8 +104,8 @@ Return JSON in the following format exactly:
                     projectId: projectId,
                     type: "narration",
                     status: "Narration Script generated",
-                    text: generatedJSON.voice_over_script[sceneNumber-1].narration,
-                    duration: generatedJSON.voice_over_script[sceneNumber-1].duration_sec,
+                    text: generatedJSON.voice_over_script[sceneNumber - 1].narration,
+                    duration: generatedJSON.voice_over_script[sceneNumber - 1].duration_sec,
                     emotion: generatedJSON.voice_style,
                     voice_stability: generatedJSON.stability,
                     voice_similarity_boost: generatedJSON.similarity_boost
@@ -102,9 +113,9 @@ Return JSON in the following format exactly:
             })
         }
 
-        updateStatus(projectId, "Voiceover Script Generated");
-        
-        return NextResponse.json({ message: "script Generated for voice over", success: true});
+        updateProjectStatus(projectId, "Voiceover Script Generated");
+
+        return NextResponse.json({ message: "script Generated for voice over", success: true, generatedJSON: generatedJSON });
 
     } catch (error) {
         console.log(error);

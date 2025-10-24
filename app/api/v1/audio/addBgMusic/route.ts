@@ -6,8 +6,6 @@ import { uploadAudioToCloudinary } from "../../uploadAudio/route";
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegInstaller from '@ffmpeg-installer/ffmpeg'
 import ffprobeInstaller from '@ffprobe-installer/ffprobe'
-import { url } from "inspector";
-import { updateStatus } from "../../video/generateScenes/route";
 import { downloadFile } from "@/app/lib/downloadFiles";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
@@ -37,7 +35,6 @@ export async function POST(req: NextRequest) {
 
         let tuneOffset = 0; // in milliseconds
         
-        updateStatus(projectId, "Adding tune in Background");
 
         for (const audio of audios) {
             const voicePath = `/tmp/voice-${audio.id}.mp3`;

@@ -6,7 +6,8 @@ import ffprobeInstaller from '@ffprobe-installer/ffprobe';
 import { downloadFile } from "@/app/lib/downloadFiles";
 import { cloudinary } from "@/app/lib/cloudinary";
 import fs from 'fs'
-import { updateStatus } from "../generateScenes/route";
+import { updateProjectStatus } from "../generateScenes/route";
+import path from "path";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 ffmpeg.setFfprobePath(ffprobeInstaller.path);
@@ -31,62 +32,108 @@ async function getAudioDuration(audioPath: string) {
 
 ///function to merge audio and image
 async function mergeImageWithAudios({ imagePath, audioPath, index, duration }: MergeInterface) {
-  const output = `output_scene_${index + 1}.mp4`;
-  const roundedDuration = Math.ceil(duration);
+    const output = `output_scene_${index}.mp4`;
+    const roundedDuration = Math.ceil(duration);
 
-  await new Promise<void>((resolve, reject) => {
-    ffmpeg()
-      .input(`color=size=720x1280:duration=${roundedDuration}:rate=30:color=black`)
-      .inputFormat('lavfi')
-      .input(imagePath)
-      .loop(duration)
-      // Your audio
-      .input(audioPath)
-      // Motion effect
-      .complexFilter([
-        `[1]scale=820:1380,format=rgba[img];` +
-        `[0][img]overlay=` +
-        `x='(W/2-w/2)+15*cos(2*PI*t/${roundedDuration/1.5})':` +
-        `y='(H/2-h/2)+7*sin(2*PI*t/${roundedDuration/1.5})':` +
-        `shortest=1[v]`
-      ])
-      .outputOptions([
-        "-map [v]",
-        "-map 2:a",
-        "-pix_fmt yuv420p",
-        "-r 60",
-        "-c:v libx264",
-        "-shortest",
-        `-t ${duration}`,
-      ])
-      .save(output)
-      .on("end", () => {
-        resolve();
-      })
-      .on("error", (err) => {
-        console.error("❌ FFmpeg error:", err.message);
-        reject(err);
-      });
-  });
-
-  try {
-    const uploadRes = await cloudinary.uploader.upload(output, {
-      resource_type: "video",
-      folder: "generated_scenes",
-      use_filename: true,
+    await new Promise<void>((resolve, reject) => {
+        ffmpeg()
+            .input(`color=size=720x1280:duration=${roundedDuration}:rate=30:color=black`)
+            .inputFormat('lavfi')
+            .input(imagePath)
+            .loop(duration)
+            .input(audioPath)
+            .complexFilter([
+                `[1]scale=820:1380,format=rgba[img];` +
+                `[0][img]overlay=` +
+                `x='(W/2-w/2)+15*cos(2*PI*t/${roundedDuration/1.2})':` +
+                `y='(H/2-h/2)+10*sin(2*PI*t/${roundedDuration/1.2})':` +
+                `shortest=1[v]`
+            ])
+            .outputOptions([
+                "-map [v]",
+                "-map 2:a",
+                "-pix_fmt yuv420p",
+                "-r 60",
+                "-c:v libx264",
+                "-shortest",
+                `-t ${duration}`,
+            ])
+            .save(output)
+            .on("end", () => {
+                resolve();
+            })
+            .on("error", (err) => {
+                console.error("❌ FFmpeg error:", err.message);
+                reject(err);
+            });
     });
 
-    fs.unlinkSync(output);
+    try {
+        const uploadRes = await cloudinary.uploader.upload(output, {
+            resource_type: "video",
+            folder: "generated_scenes",
+            use_filename: true,
+        });
 
-    return {
-      url: uploadRes.secure_url,
-      duration: uploadRes.duration,
-      public_id: uploadRes.public_id,
-    };
-  } catch (err) {
-    throw err;
-  }
+
+        return {
+            url: uploadRes.secure_url,
+            duration: uploadRes.duration,
+            public_id: uploadRes.public_id,
+            mergedImageAudioPath: output
+        };
+    } catch (err) {
+        throw err;
+    }
 }
+
+//function to merge videos 
+async function mergeVideos(
+  temp1: string,
+  temp2: string,
+  output: string,
+  startTime: number,
+  endTime: number
+) {
+  const duration1 = await new Promise<number>((resolve, reject) => {
+    ffmpeg.ffprobe(temp1, (err, metadata) => {
+      if (err) return reject(err);
+      resolve(metadata.format.duration as number);
+    });
+  });
+
+  const fadeDur = 0.5;
+  const overlapStart = Math.max(0, duration1 - fadeDur);
+
+  const filter = `
+    [0:v]scale=720:1280,format=yuv420p,setsar=1,
+         fade=t=out:st=${overlapStart}:d=${fadeDur}[v0];
+    [1:v]scale=720:1280,format=yuv420p,setsar=1,
+         fade=t=in:st=0:d=${fadeDur}[v1];
+    [0:a]afade=t=out:st=${overlapStart}:d=${fadeDur}[a0];
+    [1:a]afade=t=in:st=0:d=${fadeDur}[a1];
+    [v0][a0][v1][a1]concat=n=2:v=1:a=1[outv][outa]
+  `.replace(/\s+/g, "");
+
+  return new Promise<void>((resolve, reject) => {
+    ffmpeg()
+      .input(temp1)
+      .input(temp2)
+      .complexFilter(filter)
+      .outputOptions([
+        "-map", "[outv]",
+        "-map", "[outa]",
+        "-c:v", "libx264",
+        "-c:a", "aac",
+        "-pix_fmt", "yuv420p",
+        "-movflags", "+faststart",
+      ])
+      .on("error", e => reject(e))
+      .on("end", () => resolve())
+      .save(path.resolve(output));
+  });
+}
+
 
 
 
@@ -94,87 +141,68 @@ async function mergeImageWithAudios({ imagePath, audioPath, index, duration }: M
 export async function POST(req: NextRequest) {
     try {
         const data = await req.json();
-        const projectId = data.projectId;
-
-        const assets = await prisma.asset.findMany({
-            where: {
-                projectId: projectId
-            },
-            orderBy: {
-                createdAt: "asc"
-            }
-        });
-
-        const audios = await prisma.audio.findMany({
-            where: {
-                projectId: projectId
-            },
-            orderBy: {
-                createdAt: "asc"
-            }
-        });
-
-        const scenes = await prisma.scene.findMany({
-            where: {
-                projectId: projectId
-            },
-            orderBy: {
-                sceneNumber: "asc"
-            }
-        })
-
-        updateStatus(projectId, "Generating Queue");
-        const outputs = [];
-        let previousEndTime = 0;
-        for (let i = 0; i < assets.length; i++) {
-            const imagePath = `scene_${i + 1}.jpg`;
-            const audioPath = `audio_${i + 1}.mp3`;
-            
-            await downloadFile(assets[i].url, imagePath);
-            await downloadFile(audios[i].url || '', audioPath);
-
-            const duration = await getAudioDuration(audioPath)
-
-            const output = await mergeImageWithAudios({ imagePath, audioPath, index: i, duration });
-            fs.unlinkSync(imagePath);
-            fs.unlinkSync(audioPath);
-
-            const startTime = previousEndTime;
-            const endTime = startTime + Number(duration);
-            outputs.push({
-                url: output.url,
-                endTime: endTime,
-                startTime: startTime
-            });
-            await prisma.scene.update({
-                where: {
-                    id: scenes[i].id
-                },
-                data: {
-                    finalUrl: output.url,
-                    startTime: `${startTime}s`,
-                    endTime: `${endTime}s`
-                }
-            })
-            previousEndTime = endTime
-        }
-
-        console.log(outputs);
+        const audioUrl = data.audioUrl;
+        const imageUrl = data.imageUrl;
+        const scene = data.scene;
+        const projectProgress = data.progress;
+        const finalOutputPath = data.outputPath;
+        const index = data.index;
+        
         
 
-        const res = await fetch(`${process.env.BASE_URL}/api/v1/video/wholeMergedVideo`, {
-            method: 'POST',
-            headers: {
-                "Content-type": 'application/json',
-                "Accept": "application/json"
+        if (!scene) {
+            throw new Error("Scene not found")
+        }
+        const imagePath = `scene_${scene.sceneNumber}.jpg`;
+        const audioPath = `audio_${scene.sceneNumber}.mp3`;
+ 
+
+        await downloadFile(imageUrl, imagePath);
+        await downloadFile(audioUrl, audioPath);
+
+        const duration = await getAudioDuration(audioPath)
+
+        const output = await mergeImageWithAudios({ imagePath, audioPath, index: scene.sceneNumber, duration });
+        fs.unlinkSync(imagePath);
+        fs.unlinkSync(audioPath);
+
+        
+
+        const startTime = projectProgress;
+        const endTime = startTime + Number(duration);
+        await prisma.scene.update({
+            where: {
+                id: scene.id
             },
-            body: JSON.stringify({
-                outputs,
-                projectId
-            })
+            data: {
+                finalUrl: output.url,
+                startTime: `${startTime}s`,
+                endTime: `${endTime}s`
+            }
         })
-        const resData = await res.json();
-        return NextResponse.json({ message: resData.message, url: resData.url})
+
+        if(index == 0){
+            fs.copyFileSync(output.mergedImageAudioPath, finalOutputPath);
+        }else{
+            const tmpMerged = `tmp_${index}.mp4`;
+            await mergeVideos(finalOutputPath, output.mergedImageAudioPath, tmpMerged, startTime, endTime);
+            try {
+                fs.copyFileSync(tmpMerged, finalOutputPath);
+            } finally {
+                if (fs.existsSync(tmpMerged)) {
+                    fs.unlinkSync(tmpMerged);
+                }
+            }
+        }
+
+        // cleanup per-scene temp output after merging/copying
+        try {
+            if (fs.existsSync(output.mergedImageAudioPath)) {
+                fs.unlinkSync(output.mergedImageAudioPath);
+            }
+        } catch {}
+
+        return NextResponse.json({ message: "Audio added to scene", success: true, url: output.url, sceneEndTime: endTime, outputPath: output.mergedImageAudioPath });
     } catch (error) {
         console.log(error);
         return NextResponse.json({ message: "Internal Server Error", success: false }, { status: 500 })

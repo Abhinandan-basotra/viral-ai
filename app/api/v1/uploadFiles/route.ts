@@ -11,6 +11,7 @@ export async function uploadToCloudinary(file: Blob, folder: string = "default_f
       (error, result) => {
         if (error || !result) return reject(error || "Upload failed");
         resolve(result.secure_url);
+        return result.secure_url;
       }
     );
     stream.end(buffer);

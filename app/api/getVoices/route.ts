@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-    const api_key = process.env.VOICE_GENERATION_KEY_2 as string;
+    const api_key = process.env.VOICE_GENERATION_KEY as string;
     try {
         const res = await fetch("https://api.elevenlabs.io/v1/voices?page_size=4", {
             method: "GET",
