@@ -29,17 +29,14 @@ export async function POST(req: NextRequest) {
 
         await updateProjectStatus(projectId, "Generating Scenes");
         //getting project with script
-        const response = await fetch(`${baseUrl}/api/v1/getProjectById/${projectId}`, {
-            method: 'GET',
-            headers: {
-                'Content-type': 'application/json',
-                'Accept': 'application/json',
-                // 'Cookie': req.headers.get('cookie') || ''
+        const project = await prisma.project.findFirst({
+            where: {
+                id: projectId
             }
-        });
-        const responseData = await response.json();
-        const script = responseData.project.script;
-        const expectedLength = responseData.project.expectedLength;
+        })
+        if (!project) return NextResponse.json({ message: "Project not found", success: false }, { status: 404 })
+        const script = project.script;
+        const expectedLength = project.expectedLength;
 
         const basePrompt = `You are a professional scene designer for short-form videos (e.g., YouTube Shorts, Reels, TikToks).  
 Your task is to break down the given script into a list of visually compelling scenes, based on the provided inputs.
@@ -91,7 +88,7 @@ Your task is to break down the given script into a list of visually compelling s
                 ],
             })
         })
-        if(!res.ok){
+        if (!res.ok) {
             throw new Error(`Gemini API Error: ${res.statusText}`);
         }
         const generatedScenesRes = await res.json();
@@ -119,7 +116,8 @@ Your task is to break down the given script into a list of visually compelling s
             scenes.push(createdScene);
         }
 
-        updateProjectStatus(projectId, "Generating Voiceover Script");
+        console.log(scenes);
+        await updateProjectStatus(projectId, "Generating Voiceover Script");
         //generating voiceover script
         const voiceRes = await fetch(`${baseUrl}/api/v1/audio/scriptForVoice`, {
             method: 'POST',
@@ -129,12 +127,13 @@ Your task is to break down the given script into a list of visually compelling s
                 // 'Cookie': req.headers.get('cookie') || ''
             },
             body: JSON.stringify({
-                projectId: projectId,
+                project: project,
+                scenes: scenes
             })
         })
 
         const voiceData = await voiceRes.json();
-        
+
 
         await updateProjectStatus(projectId, "Generating Assets");
         let projectProgress = 0;
@@ -157,7 +156,7 @@ Your task is to break down the given script into a list of visually compelling s
                 })
             })
             const data = await res.json();
-            
+
 
             //generate audio
             const audio = await prisma.audio.findFirst({
@@ -169,7 +168,7 @@ Your task is to break down the given script into a list of visually compelling s
             if (!audio) {
                 throw new Error("Audio not found")
             }
-            
+
             const audioRes = await fetch(`${baseUrl}/api/v1/audio/generateVoice`, {
                 method: 'POST',
                 headers: {
@@ -205,22 +204,20 @@ Your task is to break down the given script into a list of visually compelling s
             })
             const mergeData = await mergeRes.json();
             projectProgress = Number(mergeData.sceneEndTime);
-
-            if(i == scenes.length-1) break;
             i++;
             await updateSceneStatus(scene.id, "Generated");
         }
 
         // upload final output once after all scenes are processed
         const finalOutputRes = await uploadToCloudinary(new Blob([fs.readFileSync(finalOutputPath)]), "final");
-        await prisma.project.update({
-            where: {
-                id: projectId
-            },
-            data: {
-                finalUrl: finalOutputRes
-            }
-        })
+            await prisma.project.update({
+                where: {
+                    id: projectId
+                },
+                data: {
+                    finalUrl: finalOutputRes
+                }
+            })
 
         await updateProjectStatus(projectId, "Generated");
 

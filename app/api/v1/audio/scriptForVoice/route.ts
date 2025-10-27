@@ -5,18 +5,9 @@ import { updateProjectStatus } from "../../video/generateScenes/route";
 export async function POST(req: NextRequest) {
     try {
         const data = await req.json();
-        const projectId = await data.projectId;
-
-        const scenes = await prisma.scene.findMany({
-            where: {
-                projectId: projectId
-            }
-        })
-        const project = await prisma.project.findFirst({
-            where: {
-                id: projectId
-            }
-        })
+        const scenes = data.scenes;
+        const project = data.project;
+        const projectId = project.id;
         updateProjectStatus(projectId, "Generating Voiceover Script");
         let combined_script = "";
         for (const scene of scenes) {

@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ChevronDown, Pause, Play, PlayIcon, Proportions, RectangleHorizontal, RectangleVertical, Sparkles, Square, Wand2, WandSparkles } from "lucide-react"
+import { ChevronDown, icons, Pause, Play, PlayIcon, Proportions, RectangleHorizontal, RectangleVertical, Sparkles, Square, Wand2, WandSparkles } from "lucide-react"
 import { Separator } from "@/components/ui/separator";
 import GenerateScript from "@/components/GenerateScript";
 import { BASE_URL } from "@/lib/constants";
@@ -92,6 +92,21 @@ export default function StoryCreationForm() {
     const toggleTone = (tone: string) => {
         setSelectedTones((prev) => (prev.includes(tone) ? prev.filter((t) => t !== tone) : [tone]))
     }
+
+    const aspectRatios = [
+        {
+            ratio: "16:9",
+            icon: RectangleHorizontal
+        },
+        {
+            ratio: "9:16",
+            icon: RectangleVertical
+        },
+        {
+            ratio: "1:1",
+            icon: Square
+        }
+    ]
 
     const toggleVoice = (voiceName: string) => {
         setSelectedVoices((prev) => (prev.includes(voiceName) ? prev.filter((v) => v !== voiceName) : [voiceName]))
@@ -194,13 +209,13 @@ export default function StoryCreationForm() {
                 openScriptPage && <GenerateScript setOpenScriptPage={setOpenScriptPage} generatedScript={setScript} />
             }
             {
-                openVoices && 
-                <AllVoices 
-                voices={voices} 
-                playAudio={playAudio} 
-                openVoices={openVoices} 
-                setOpenVoices={setOpenVoices}
-                toggleVoice={toggleVoice}
+                openVoices &&
+                <AllVoices
+                    voices={voices}
+                    playAudio={playAudio}
+                    openVoices={openVoices}
+                    setOpenVoices={setOpenVoices}
+                    toggleVoice={toggleVoice}
                 />
             }
             <div className="flex flex-row">
@@ -239,7 +254,7 @@ export default function StoryCreationForm() {
                                 {script.length}/1200
                             </p>
                         </Card>
-                    
+
                         {/* Generation Preset */}
                         <Card className="bg-gray-900 border-gray-800 p-6">
                             <Label className="text-white mb-4 block font-semibold">Choose a generation preset</Label>
@@ -309,7 +324,7 @@ export default function StoryCreationForm() {
                                 {
                                     loading ? (
                                         <div>
-                                            <LoaderThree/>
+                                            <LoaderThree />
                                         </div>
                                     ) : (
                                         <>
@@ -368,11 +383,11 @@ export default function StoryCreationForm() {
 
                             </div>
                             <div className="flex justify-center">
-                                <Button 
-                                className="flex items-center gap-2 cursor-pointer"
-                                onClick={() =>{
-                                    setOpenVoices(!openVoices)
-                                }}
+                                <Button
+                                    className="flex items-center gap-2 cursor-pointer"
+                                    onClick={() => {
+                                        setOpenVoices(!openVoices)
+                                    }}
                                 >
                                     View More
                                     <ChevronDown width={20} height={20} />
@@ -380,44 +395,31 @@ export default function StoryCreationForm() {
                             </div>
                         </Card>
 
-                        <Separator/>
+                        <Separator />
 
                         <div className="flex flex-col gap-4 ml-8">
                             <div className="flex items-center gap-2">
-                            <Proportions/> <span>Aspect Ratio</span>
+                                <Proportions /> <span>Aspect Ratio</span>
                             </div>
                             <div className="flex gap-2">
                                 <div className="border border-gray-600 h-13 w-auto flex items-center rounded-2xl gap-4 p-2">
-                                    <div className="flex items-center">
-                                        <Button 
-                                        className={"bg-transparent hover:bg-transparent cursor-pointer text-white " + (aspectRatio === "9:16" ? "bg-gray-700 hover:bg-gray-600" : "")}
-                                        onClick={() => {
-                                            setAspectRatio("9:16")
-                                        }}
-                                        >
-                                            <RectangleVertical color="white"/> <span>9:16</span>
-                                        </Button>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <Button 
-                                        className={"bg-transparent hover:bg-transparent cursor-pointer text-white " + (aspectRatio === "16:9" ? "bg-gray-700 hover:bg-gray-600" : "")}
-                                        onClick={() => {
-                                            setAspectRatio("16:9")
-                                        }}
-                                        >
-                                            <RectangleHorizontal color="white"/> <span>16:9</span>
-                                        </Button>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <Button 
-                                        className= {"bg-transparent hover:bg-transparent cursor-pointer text-white " + (aspectRatio === "1:1" ? "bg-gray-700 hover:bg-gray-600" : "")}
-                                        onClick={() => {
-                                            setAspectRatio("1:1")
-                                        }}
-                                        >
-                                            <Square color="white"/> <span>1:1</span>
-                                        </Button>
-                                    </div>
+                                    {aspectRatios.map((ratio) => {
+                                        const Icon = ratio.icon;
+                                        const isSelected = aspectRatio === ratio.ratio;
+
+                                        return (
+                                            <div key={ratio.ratio} className="flex items-center">
+                                                <Button
+                                                    className={`flex items-center gap-2 cursor-pointer text-white px-3 py-2 rounded-xl transition-all duration-300 ${isSelected ? "bg-gray-700 hover:bg-gray-600" : "bg-transparent hover:bg-gray-800"
+                                                        }`}
+                                                    onClick={() => setAspectRatio(ratio.ratio)}
+                                                >
+                                                    <Icon color="white" className="w-5 h-5" />
+                                                    <span>{ratio.ratio}</span>
+                                                </Button>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
@@ -462,7 +464,6 @@ export default function StoryCreationForm() {
                         </video>
                     </div>
                 </div>
-
             </div>
         </div>
     )

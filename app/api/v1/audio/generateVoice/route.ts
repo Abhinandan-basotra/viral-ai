@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/db";
-import { cloudinary } from "@/app/lib/cloudinary";
-import { uploadToCloudinary } from "../../uploadFiles/route";
 import { uploadAudioToCloudinary } from "../../uploadAudio/route";
-import { updateProjectStatus } from "../../video/generateScenes/route";
 
 export async function POST(req: Request) {
     try {

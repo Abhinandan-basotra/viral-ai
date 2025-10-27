@@ -2,10 +2,8 @@
 //temporary
 import prisma from "@/app/lib/db";
 import { NextRequest, NextResponse } from "next/server";
-import { uploadToCloudinary } from "../../uploadFiles/route";
-import OpenAI from "openai";
-import fs from 'fs'
 
+import { uploadToCloudinary } from "../../uploadFiles/route";
 export async function POST(req: NextRequest){
     try {
         const data = await req.json();
