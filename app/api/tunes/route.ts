@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { uploadAudioToCloudinary } from "../v1/uploadAudio/route";
 import prisma from "@/app/lib/db";
+import { uploadAudioToCloudinary } from "@/app/lib/cloudinary/uploadAudioToCloudinary";
 
 export async function POST(req: NextRequest){
     try {

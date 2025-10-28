@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db";
 import axios from "axios";
 import fs from "fs";
-import { uploadAudioToCloudinary } from "../../uploadAudio/route";
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegInstaller from '@ffmpeg-installer/ffmpeg'
 import ffprobeInstaller from '@ffprobe-installer/ffprobe'
 import { downloadFile } from "@/app/lib/downloadFiles";
+import { uploadAudioToCloudinary } from "@/app/lib/cloudinary/uploadAudioToCloudinary";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 ffmpeg.setFfprobePath(ffprobeInstaller.path);

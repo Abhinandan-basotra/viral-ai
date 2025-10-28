@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db";
-import { uploadToCloudinary } from "../../uploadFiles/route";
 import fs from "fs";
 import { updateSceneStatus } from "@/app/lib/updateSceneStatus";
+import { uploadVideoToCloudinary } from "@/app/lib/cloudinary/uploadVideoToCloudinary";
 
 export async function updateProjectStatus(projectId: string, status: string) {
     await prisma.project.update({
@@ -116,7 +116,6 @@ Your task is to break down the given script into a list of visually compelling s
             scenes.push(createdScene);
         }
 
-        console.log(scenes);
         await updateProjectStatus(projectId, "Generating Voiceover Script");
         //generating voiceover script
         const voiceRes = await fetch(`${baseUrl}/api/v1/audio/scriptForVoice`, {
@@ -138,8 +137,9 @@ Your task is to break down the given script into a list of visually compelling s
         await updateProjectStatus(projectId, "Generating Assets");
         let projectProgress = 0;
         const finalOutputPath = `finalOutput_${projectId}.mp4`;
-        let i = 0;
-        for (const scene of scenes) {
+        const totalScenes = scenes.length;
+        for (let i = 0; i < totalScenes; i++) {
+            const scene = scenes[i];
             //making assets according to scene
             const res = await fetch(`${baseUrl}/api/v1/video/generateAssets`, {
                 method: 'POST',
@@ -155,7 +155,13 @@ Your task is to break down the given script into a list of visually compelling s
                     style: generationPreset
                 })
             })
+            if (!res.ok) {
+                throw new Error(`generateAssets failed with status ${res.status}`);
+            }
             const data = await res.json();
+            if (!data?.success || !data?.url) {
+                throw new Error(`generateAssets returned invalid payload: ${data?.message || 'no url'}`);
+            }
 
 
             //generate audio
@@ -204,12 +210,9 @@ Your task is to break down the given script into a list of visually compelling s
             })
             const mergeData = await mergeRes.json();
             projectProgress = Number(mergeData.sceneEndTime);
-            i++;
             await updateSceneStatus(scene.id, "Generated");
-        }
-
-        // upload final output once after all scenes are processed
-        const finalOutputRes = await uploadToCloudinary(new Blob([fs.readFileSync(finalOutputPath)]), "final");
+            await updateProjectStatus(projectId, "Merging Scenes");
+            const finalOutputRes = await uploadVideoToCloudinary(new Blob([fs.readFileSync(finalOutputPath)]), "final");
             await prisma.project.update({
                 where: {
                     id: projectId
@@ -218,8 +221,11 @@ Your task is to break down the given script into a list of visually compelling s
                     finalUrl: finalOutputRes
                 }
             })
+        }
 
         await updateProjectStatus(projectId, "Generated");
+
+        fs.unlinkSync(finalOutputPath);  
 
 
         return NextResponse.json({ message: "Scenes and Images Generated", success: true, scenes: generatedScenes });

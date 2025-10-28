@@ -1,9 +1,9 @@
 
 //temporary
+import { uploadImageToCloudinary } from "@/app/lib/cloudinary/uploadImageToCloudinary";
 import prisma from "@/app/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 
-import { uploadToCloudinary } from "../../uploadFiles/route";
 export async function POST(req: NextRequest){
     try {
         const data = await req.json();
@@ -27,9 +27,21 @@ export async function POST(req: NextRequest){
             Ensure the final result looks coherent, visually appealing, and accurately reflects the given description and mood.
         `;
 
-        const response = await fetch(`https://image.pollinations.ai/prompt/${prompt}`)
+        const response = await fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}` , {
+            headers: { Accept: "image/*" }
+        })
+        if (!response.ok) {
+            return NextResponse.json({ message: "Image generator failed", success: false }, { status: 502 });
+        }
+        const contentType = response.headers.get("content-type") || "";
+        if (!contentType.startsWith("image/")) {
+            return NextResponse.json({ message: "Upstream did not return an image", success: false }, { status: 502 });
+        }
         const buffer = await response.arrayBuffer();
-        const imageUrl = await uploadToCloudinary(new Blob([buffer]), "default_folder");
+        if (!buffer || buffer.byteLength === 0) {
+            return NextResponse.json({ message: "Received empty image buffer", success: false }, { status: 502 });
+        }
+        const imageUrl = await uploadImageToCloudinary(new Blob([buffer]), "default_folder");
         // resolve the persisted scene record by project and sceneNumber
         const sceneRecord = await prisma.scene.findFirst({
             where: {

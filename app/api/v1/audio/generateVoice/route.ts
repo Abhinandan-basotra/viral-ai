@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/app/lib/db";
-import { uploadAudioToCloudinary } from "../../uploadAudio/route";
+import { uploadAudioToCloudinary } from "@/app/lib/cloudinary/uploadAudioToCloudinary";
 
 export async function POST(req: Request) {
     try {
@@ -9,7 +9,7 @@ export async function POST(req: Request) {
         const audioId = data.audioId;
         const audioText = data.audioText
 
-        const apikey = process.env.VOICE_GENERATION_KEY;
+        const apikey = process.env.VOICE_GENERATION_KEY_2;
         if (!apikey) return NextResponse.json({ message: "api key is not present", success: false }, { status: 404 })
 
         const text = audioText;

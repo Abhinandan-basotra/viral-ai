@@ -4,7 +4,7 @@ import ffmpeg from "fluent-ffmpeg";
 import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
 import ffprobeInstaller from '@ffprobe-installer/ffprobe';
 import { downloadFile } from "@/app/lib/downloadFiles";
-import { cloudinary } from "@/app/lib/cloudinary";
+import { cloudinary } from "@/app/lib/cloudinary/cloudinary";
 import fs from 'fs'
 import { updateProjectStatus } from "../generateScenes/route";
 import path from "path";
@@ -45,8 +45,8 @@ async function mergeImageWithAudios({ imagePath, audioPath, index, duration }: M
             .complexFilter([
                 `[1]scale=820:1380,format=rgba[img];` +
                 `[0][img]overlay=` +
-                `x='(W/2-w/2)+15*cos(2*PI*t/${roundedDuration/1.2})':` +
-                `y='(H/2-h/2)+10*sin(2*PI*t/${roundedDuration/1.2})':` +
+                `x='(W/2-w/2)+14*cos(2*PI*t/${roundedDuration/3.5})':` +
+                `y='(H/2-h/2)+7*sin(2*PI*t/${roundedDuration/3.5})':` +
                 `shortest=1[v]`
             ])
             .outputOptions([
@@ -147,6 +147,8 @@ export async function POST(req: NextRequest) {
         const projectProgress = data.progress;
         const finalOutputPath = data.outputPath;
         const index = data.index;
+        
+        console.log(scene.sceneNumber);
         
         
 

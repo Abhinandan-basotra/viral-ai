@@ -1,4 +1,4 @@
-import { cloudinary } from "@/app/lib/cloudinary";
+import { cloudinary } from "./cloudinary";
 
 interface UploadResult {
   url: string;
