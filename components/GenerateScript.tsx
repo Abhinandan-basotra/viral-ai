@@ -21,6 +21,7 @@ export default function GenerateScript({ setOpenScriptPage, generatedScript }: a
             toast.error("Please enter a prompt and select duration");
             return;
         }
+        if(loading) return;
         setLoading(true);
         try {
             const res = await fetch(`${BASE_URL}/api/v1/video/generateScript`,{
@@ -101,6 +102,7 @@ export default function GenerateScript({ setOpenScriptPage, generatedScript }: a
                         <Button
                             className="ml-[70%] cursor-pointer"
                             onClick={handleGenerate}
+                            disabled={loading}
                         >
                             {
                                 loading ? (<div className="flex justify-center items-center gap-2"><span>Generating</span> <Spinner/> </div>) : "Generate Script"

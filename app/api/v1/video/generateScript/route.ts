@@ -31,6 +31,7 @@ Guidelines:
 - Write only the narration as plain text paragraphs.
 - Do NOT include stage directions, sound cues, or screenplay formatting (no [SCENE], (SOUND:), or NARRATOR labels).
 - Use natural, flowing sentences that sound powerful when spoken aloud.
+- Start with a strong hook or question that captures attention instantly. 
 - Begin with a dramatic hook about the event.
 - Build momentum by describing the response, courage, or outcome.
 - End with an inspiring and emotional note.

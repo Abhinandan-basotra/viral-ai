@@ -134,10 +134,6 @@ async function mergeVideos(
   });
 }
 
-
-
-
-
 export async function POST(req: NextRequest) {
     try {
         const data = await req.json();
