@@ -218,7 +218,8 @@ Your task is to break down the given script into a list of visually compelling s
                     id: projectId
                 },
                 data: {
-                    finalUrl: finalOutputRes
+                    finalUrl: finalOutputRes,
+                    progress: ((i+1)*100)/totalScenes
                 }
             })
         }

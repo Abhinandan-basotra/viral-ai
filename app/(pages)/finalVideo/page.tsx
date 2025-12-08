@@ -8,11 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { ScrollAreaPro } from "@/components/ui/scroll-areapro";
 import { BackgroundGradient } from "@/components/ui/background-gradient";
+import { Progress } from "@/components/ui/progress";
 
 export default function FinalVideo() {
     const lastIdRef = useRef<string | null>(null);
     const [scenes, setScenes] = useState<any[]>([]);
     const [projectUrl, setProjectUrl] = useState("");
+    const [progress, setProgress] = useState(0);
     const isPollingDone = useRef(false);
     const projectIdRef = useRef<string | null>(null);
 
@@ -37,6 +39,7 @@ export default function FinalVideo() {
             const data = await res.json();
 
             const incomingScenes = data?.neededScenes ?? data?.allScenes ?? [];
+            setProgress(data.progress);
 
             if (data.done || !data || incomingScenes.length === 0) {
                 clearInterval(interval);
@@ -45,6 +48,7 @@ export default function FinalVideo() {
             }
 
             setProjectUrl(data.project);
+
             if (incomingScenes.length > 0) {
                 setScenes((prev) => {
                     const newOnes = incomingScenes.filter(
@@ -64,6 +68,7 @@ export default function FinalVideo() {
         <div className="min-h-screen bg-black p-6">
             <div className="mx-auto max-w-7xl space-y-6">
                 <div className="grid grid-cols-12 gap-6">
+                    
                     {/* Scenes Section */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -88,7 +93,6 @@ export default function FinalVideo() {
                                     showProgress="vertical"
                                     type="hover"
                                 >
-
                                     <div className="p-4 space-y-3 pr-3">
                                         {scenes.length > 0 ? (
                                             scenes.map((scene) => (
@@ -137,18 +141,40 @@ export default function FinalVideo() {
                             <Separator className="mb-2" />
 
                             <CardContent>
-                                
+
+                                <div className="mb-6">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <span className="text-sm font-medium text-gray-300">
+                                            Processing Video
+                                        </span>
+                                        <span className="text-sm text-gray-400">
+                                            {progress}%
+                                        </span>
+                                    </div>
+
+                                    <Progress
+                                        value={progress}
+                                        className="h-3 w-full overflow-hidden rounded-full bg-gray-700 transition-all duration-300"
+                                    />
+
+                                    <div className="mt-2 text-xs text-gray-400 flex items-center gap-2">
+                                        <span className="inline-block h-2 w-2 animate-ping rounded-full bg-green-400/80" />
+                                        <span>{progress < 100 ? `Generating frame ${scenes.length}` : "Final Video"}</span>
+                                    </div>
+                                </div>
+
+                                {/* Video Player */}
                                 <div className="w-full rounded-xl overflow-hidden flex items-center justify-center p-4">
                                     {projectUrl ? (
                                         <BackgroundGradient className="rounded-xxl dark:bg-zinc-900">
-                                        <motion.video
-                                            src={projectUrl}
-                                            controls
-                                            className="w-[360px] h-[640px] rounded-lg m-1"
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            transition={{ duration: 0.3 }}
-                                        />
+                                            <motion.video
+                                                src={projectUrl}
+                                                controls
+                                                className="w-[360px] h-[640px] rounded-lg m-1"
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                transition={{ duration: 0.3 }}
+                                            />
                                         </BackgroundGradient>
                                     ) : (
                                         <div className="text-center">
@@ -164,6 +190,7 @@ export default function FinalVideo() {
                             </CardContent>
                         </Card>
                     </motion.div>
+
                 </div>
             </div>
         </div>
