@@ -6,12 +6,13 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ChevronDown, icons, Pause, Play, PlayIcon, Proportions, RectangleHorizontal, RectangleVertical, Sparkles, Square, Wand2, WandSparkles } from "lucide-react"
+import { ChevronDown, Pause, Play, Proportions, RectangleHorizontal, RectangleVertical, Sparkles, Square, Wand2, WandSparkles } from "lucide-react"
 import { Separator } from "@/components/ui/separator";
 import GenerateScript from "@/components/GenerateScript";
 import { BASE_URL } from "@/lib/constants";
 import { LoaderThree } from "@/components/ui/loader";
 import AllVoices from "@/components/AllVoices";
+
 interface Tune {
     id: number;
     name: string;
@@ -67,7 +68,6 @@ const GENRES = [
     }
 ]
 
-
 export default function StoryCreationForm() {
     const [title, setTitle] = useState("")
     const [prompt, setPrompt] = useState("")
@@ -114,7 +114,6 @@ export default function StoryCreationForm() {
 
     const handleGenerate = async () => {
         setIsGenerating(true)
-        // Simulate API call
         await new Promise((resolve) => setTimeout(resolve, 2000))
         setIsGenerating(false)
     }
@@ -204,12 +203,9 @@ export default function StoryCreationForm() {
     }, [])
 
     return (
-        <div>
-            {
-                openScriptPage && <GenerateScript setOpenScriptPage={setOpenScriptPage} generatedScript={setScript} />
-            }
-            {
-                openVoices &&
+        <div className="min-h-screen">
+            {openScriptPage && <GenerateScript setOpenScriptPage={setOpenScriptPage} generatedScript={setScript} />}
+            {openVoices && (
                 <AllVoices
                     voices={voices}
                     playAudio={playAudio}
@@ -217,28 +213,27 @@ export default function StoryCreationForm() {
                     setOpenVoices={setOpenVoices}
                     toggleVoice={toggleVoice}
                 />
-            }
-            <div className="flex flex-row">
-                <div className="w-3/5">
-                    <div className="space-y-8 p-10">
+            )}
+            
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-0">
+                <div className="w-full lg:w-3/5 xl:w-2/3">
+                    <div className="space-y-6 md:space-y-8 p-4 md:p-6 lg:p-10">
                         <div>
-                            <h1 className="text-4xl font-bold mb-2">Create Your Story</h1>
-                            <p className="text-gray-400">Let AI help you craft an unforgettable tale</p>
+                            <h1 className="text-3xl md:text-4xl font-bold mb-2">Create Your Story</h1>
+                            <p className="text-gray-400 text-sm md:text-base">Let AI help you craft an unforgettable tale</p>
                         </div>
 
-                        <Card className="bg-gray-900 border-gray-800 p-6 relative">
-                            <div className="flex justify-between">
-                                <Label htmlFor="script" className="text-white mb-2 block font-semibold">
+                        <Card className="bg-gray-900 border-gray-800 p-4 md:p-6 relative">
+                            <div className="flex flex-col sm:flex-row justify-between gap-3 mb-3">
+                                <Label htmlFor="script" className="text-white font-semibold">
                                     Video Script
                                 </Label>
-                                <div>
-                                    <Button
-                                        className="cursor-pointer"
-                                        onClick={() => setOpenScriptPage(true)}
-                                    >
-                                        <WandSparkles className="" />Ai Script Writer
-                                    </Button>
-                                </div>
+                                <Button
+                                    className="cursor-pointer w-full sm:w-auto"
+                                    onClick={() => setOpenScriptPage(true)}
+                                >
+                                    <WandSparkles className="w-4 h-4 mr-2" />AI Script Writer
+                                </Button>
                             </div>
 
                             <Textarea
@@ -247,189 +242,176 @@ export default function StoryCreationForm() {
                                 value={script}
                                 onChange={(e) => setScript(e.target.value)}
                                 maxLength={1200}
-                                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 min-h-[200px] resize-none align-top p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+                                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 min-h-[150px] md:min-h-[200px] resize-none p-3 md:p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
                             />
 
-                            <p className="absolute bottom-10 right-10 text-gray-500 text-sm">
+                            <p className="absolute bottom-3 md:bottom-4 right-4 md:right-6 text-gray-500 text-xs md:text-sm">
                                 {script.length}/1200
                             </p>
                         </Card>
 
-                        {/* Generation Preset */}
-                        <Card className="bg-gray-900 border-gray-800 p-6">
-                            <Label className="text-white mb-4 block font-semibold">Choose a generation preset</Label>
-                            <div className="grid grid-cols-4 gap-4">
+                        <Card className="bg-gray-900 border-gray-800 p-4 md:p-6">
+                            <Label className="text-white mb-3 md:mb-4 block font-semibold">Choose a generation preset</Label>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
                                 {GENRES.map((genre) => (
                                     <Card
                                         key={genre.name}
                                         onClick={() => toggleGenre(genre.name)}
-                                        className={`relative cursor-pointer w-full h-24 rounded-xl border border-gray-700 overflow-hidden bg-cover bg-center transition-all duration-300 ${selectedGenres.includes(genre.name) ? "ring-2 ring-yellow-500 scale-105" : "hover:scale-105"
-                                            }`}
+                                        className={`relative cursor-pointer w-full h-20 md:h-24 rounded-xl border border-gray-700 overflow-hidden bg-cover bg-center transition-all duration-300 ${
+                                            selectedGenres.includes(genre.name) ? "ring-2 ring-yellow-500 scale-105" : "hover:scale-105"
+                                        }`}
                                         style={{ backgroundImage: `url(${genre.image})` }}
                                     >
                                         <div className="absolute inset-0 flex flex-col items-start justify-end">
-                                            <p className="text-sm font-bold text-white text-center p-2" style={{ WebkitTextStroke: "0.5px black" }}>{genre.name}</p>
+                                            <p className="text-xs md:text-sm font-bold text-white p-2" style={{ WebkitTextStroke: "0.5px black" }}>
+                                                {genre.name}
+                                            </p>
                                         </div>
                                     </Card>
                                 ))}
                             </div>
                         </Card>
 
-
-                        {/* Tone Section */}
-                        <Card className="bg-gray-900 border-gray-800 p-6">
-                            <Label className="text-white mb-4 block font-semibold">Select Tone</Label>
-                            <div className={loading ? "flex justify-center items-center w-full" : "grid grid-cols-2 gap-4"}>
-                                {
-                                    loading ? (
-                                        <div>
-                                            <LoaderThree />
-                                        </div>
-                                    )
-                                        :
-                                        (
-                                            <>
-                                                {tunes.map((tone: Tune) => (
-                                                    <Card
-                                                        key={tone.id}
-                                                        onClick={() => toggleTone(tone.name)}
-                                                        className={`cursor-pointer flex flex-row justify-between p-4 h-20 rounded-xl border border-gray-700 transition-all duration-300 ${selectedTones.includes(tone.name) ? "ring-2 ring-yellow-500 scale-105 bg-gray-800" : "hover:bg-gray-800"
-                                                            }`}
-                                                    >
-                                                        <div className="flex flex-col justify-center">
-                                                            <span className="font-semibold text-white">{tone.name}</span>
-                                                            <span className="text-gray-400 text-sm">{tone.description}</span>
-                                                        </div>
-                                                        <Button
-                                                            className="cursor-pointer bg-gray-800 hover:bg-gray-700 w-10 h-10 rounded-full"
-                                                            onClick={() => {
-                                                                playAudio(tone)
-                                                            }}
-                                                        >
-                                                            {playingId === tone.id ? <Pause color="white" /> : <PlayIcon color="white" />}
-                                                        </Button>
-                                                    </Card>
-                                                ))}
-                                            </>
-                                        )
-                                }
+                        <Card className="bg-gray-900 border-gray-800 p-4 md:p-6">
+                            <Label className="text-white mb-3 md:mb-4 block font-semibold">Select Tone</Label>
+                            <div className={loading ? "flex justify-center items-center w-full min-h-[100px]" : "grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4"}>
+                                {loading ? (
+                                    <LoaderThree />
+                                ) : (
+                                    <>
+                                        {tunes.map((tone: Tune) => (
+                                            <Card
+                                                key={tone.id}
+                                                onClick={() => toggleTone(tone.name)}
+                                                className={`cursor-pointer flex flex-row justify-between p-3 md:p-4 h-auto md:h-20 rounded-xl border border-gray-700 transition-all duration-300 ${
+                                                    selectedTones.includes(tone.name) ? "ring-2 ring-yellow-500 scale-105 bg-gray-800" : "hover:bg-gray-800"
+                                                }`}
+                                            >
+                                                <div className="flex flex-col justify-center flex-1 min-w-0 pr-2">
+                                                    <span className="font-semibold text-white text-sm md:text-base truncate">{tone.name}</span>
+                                                    <span className="text-gray-400 text-xs md:text-sm line-clamp-2">{tone.description}</span>
+                                                </div>
+                                                <Button
+                                                    className="cursor-pointer bg-gray-800 hover:bg-gray-700 w-10 h-10 rounded-full flex-shrink-0"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        playAudio(tone);
+                                                    }}
+                                                >
+                                                    {playingId === tone.id ? <Pause className="w-4 h-4" color="white" /> : <Play className="w-4 h-4" color="white" />}
+                                                </Button>
+                                            </Card>
+                                        ))}
+                                    </>
+                                )}
                             </div>
                         </Card>
 
-                        {/* Voice Section */}
-                        <Card className="bg-gray-900 border-gray-800 p-6">
-                            <Label className="text-white mb-4 block font-semibold">Select Voice</Label>
+                        <Card className="bg-gray-900 border-gray-800 p-4 md:p-6">
+                            <Label className="text-white mb-3 md:mb-4 block font-semibold">Select Voice</Label>
 
-                            <div className={!loading ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "flex justify-center items-center w-full"}>
-                                {
-                                    loading ? (
-                                        <div>
-                                            <LoaderThree />
-                                        </div>
-                                    ) : (
-                                        <>
-                                            {voices.slice(0, 4).map((voice: Voices) => {
-                                                const isSelected = selectedVoices.includes(voice.name);
-                                                const isPlaying = playingId === voice.voice_id;
+                            <div className={!loading ? "grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-4" : "flex justify-center items-center w-full min-h-[100px]"}>
+                                {loading ? (
+                                    <LoaderThree />
+                                ) : (
+                                    <>
+                                        {voices.slice(0, 4).map((voice: Voices) => {
+                                            const isSelected = selectedVoices.includes(voice.name);
+                                            const isPlaying = playingId === voice.voice_id;
 
-                                                return (
-                                                    <Card
-                                                        key={voice.voice_id}
-                                                        onClick={() => toggleVoice(voice.name)}
-                                                        className={`relative cursor-pointer flex flex-col justify-between p-5 h-32 rounded-xl border border-gray-700 transition-all duration-300 
-                                                ${isSelected ? "ring-2 ring-yellow-500 bg-gray-800" : "hover:bg-gray-800"} 
-                                                ${isPlaying ? "shadow-lg shadow-yellow-500/30" : ""}
-                                            `}
-                                                    >
-                                                        <div className="flex justify-between items-center">
-                                                            <div className="flex flex-col space-y-1">
-                                                                <span className="font-semibold text-white text-lg">{voice.name}</span>
-                                                                <div className="text-gray-400 text-sm">
-                                                                    {voice.labels.accent && <span>{voice.labels.accent} • </span>}
-                                                                    {voice.labels.gender && <span>{voice.labels.gender} • </span>}
-                                                                    {voice.labels.age && <span>{voice.labels.age}</span>}
-                                                                </div>
-                                                                <span className="text-xs text-gray-500 italic">{voice.labels.descriptive}</span>
+                                            return (
+                                                <Card
+                                                    key={voice.voice_id}
+                                                    onClick={() => toggleVoice(voice.name)}
+                                                    className={`relative cursor-pointer flex flex-col justify-between p-4 md:p-5 h-auto md:h-32 rounded-xl border border-gray-700 transition-all duration-300 
+                                                        ${isSelected ? "ring-2 ring-yellow-500 bg-gray-800" : "hover:bg-gray-800"} 
+                                                        ${isPlaying ? "shadow-lg shadow-yellow-500/30" : ""}
+                                                    `}
+                                                >
+                                                    <div className="flex justify-between items-start gap-3">
+                                                        <div className="flex flex-col space-y-1 flex-1 min-w-0">
+                                                            <span className="font-semibold text-white text-base md:text-lg truncate">{voice.name}</span>
+                                                            <div className="text-gray-400 text-xs md:text-sm">
+                                                                {voice.labels.accent && <span>{voice.labels.accent} • </span>}
+                                                                {voice.labels.gender && <span>{voice.labels.gender} • </span>}
+                                                                {voice.labels.age && <span>{voice.labels.age}</span>}
                                                             </div>
-
-                                                            <Button
-                                                                className={`cursor-pointer w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 
-                                                        ${isPlaying
-                                                                        ? "bg-yellow-500 hover:bg-yellow-600"
-                                                                        : "bg-gray-800 hover:bg-gray-700"
-                                                                    }`}
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    playAudio(voice);
-                                                                }}
-                                                            >
-                                                                {isPlaying ? (
-                                                                    <Pause color="black" className="w-5 h-5" />
-                                                                ) : (
-                                                                    <PlayIcon color="white" className="w-5 h-5" />
-                                                                )}
-                                                            </Button>
+                                                            <span className="text-xs text-gray-500 italic line-clamp-2">{voice.labels.descriptive}</span>
                                                         </div>
 
-                                                        {isPlaying && (
-                                                            <div className="absolute bottom-0 left-0 h-[3px] w-full bg-yellow-500 animate-pulse rounded-b-xl"></div>
-                                                        )}
-                                                    </Card>
-                                                );
-                                            })}
-                                        </>
-                                    )
-                                }
+                                                        <Button
+                                                            className={`cursor-pointer w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 flex-shrink-0
+                                                                ${isPlaying ? "bg-yellow-500 hover:bg-yellow-600" : "bg-gray-800 hover:bg-gray-700"}
+                                                            `}
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                playAudio(voice);
+                                                            }}
+                                                        >
+                                                            {isPlaying ? (
+                                                                <Pause color="black" className="w-4 h-4 md:w-5 md:h-5" />
+                                                            ) : (
+                                                                <Play color="white" className="w-4 h-4 md:w-5 md:h-5" />
+                                                            )}
+                                                        </Button>
+                                                    </div>
 
+                                                    {isPlaying && (
+                                                        <div className="absolute bottom-0 left-0 h-[3px] w-full bg-yellow-500 animate-pulse rounded-b-xl"></div>
+                                                    )}
+                                                </Card>
+                                            );
+                                        })}
+                                    </>
+                                )}
                             </div>
+                            
                             <div className="flex justify-center">
                                 <Button
-                                    className="flex items-center gap-2 cursor-pointer"
-                                    onClick={() => {
-                                        setOpenVoices(!openVoices)
-                                    }}
+                                    className="flex items-center gap-2 cursor-pointer w-full sm:w-auto"
+                                    onClick={() => setOpenVoices(!openVoices)}
                                 >
                                     View More
-                                    <ChevronDown width={20} height={20} />
+                                    <ChevronDown className="w-4 h-4 md:w-5 md:h-5" />
                                 </Button>
                             </div>
                         </Card>
 
-                        <Separator />
+                        <Separator className="my-4 md:my-6" />
 
-                        <div className="flex flex-col gap-4 ml-8">
+                        <div className="flex flex-col gap-3 md:gap-4 md:ml-8">
                             <div className="flex items-center gap-2">
-                                <Proportions /> <span>Aspect Ratio</span>
+                                <Proportions className="w-5 h-5" /> 
+                                <span className="font-semibold">Aspect Ratio</span>
                             </div>
                             <div className="flex gap-2">
-                                <div className="border border-gray-600 h-13 w-auto flex items-center rounded-2xl gap-4 p-2">
+                                <div className="border border-gray-600 h-auto flex items-center rounded-2xl gap-2 md:gap-4 p-2 flex-wrap">
                                     {aspectRatios.map((ratio) => {
                                         const Icon = ratio.icon;
                                         const isSelected = aspectRatio === ratio.ratio;
 
                                         return (
-                                            <div key={ratio.ratio} className="flex items-center">
-                                                <Button
-                                                    className={`flex items-center gap-2 cursor-pointer text-white px-3 py-2 rounded-xl transition-all duration-300 ${isSelected ? "bg-gray-700 hover:bg-gray-600" : "bg-transparent hover:bg-gray-800"
-                                                        }`}
-                                                    onClick={() => setAspectRatio(ratio.ratio)}
-                                                >
-                                                    <Icon color="white" className="w-5 h-5" />
-                                                    <span>{ratio.ratio}</span>
-                                                </Button>
-                                            </div>
+                                            <Button
+                                                key={ratio.ratio}
+                                                className={`flex items-center gap-2 cursor-pointer text-white px-3 py-2 rounded-xl transition-all duration-300 ${
+                                                    isSelected ? "bg-gray-700 hover:bg-gray-600" : "bg-transparent hover:bg-gray-800"
+                                                }`}
+                                                onClick={() => setAspectRatio(ratio.ratio)}
+                                            >
+                                                <Icon color="white" className="w-4 h-4 md:w-5 md:h-5" />
+                                                <span className="text-sm md:text-base">{ratio.ratio}</span>
+                                            </Button>
                                         );
                                     })}
                                 </div>
                             </div>
                         </div>
 
-
-                        <div className="flex gap-4 pt-4">
+                        <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-4">
                             <Button
                                 onClick={handleGenerate}
                                 disabled={isGenerating || !script || selectedVoices.length === 0 || !aspectRatio}
-                                className="flex-1 bg-white text-black hover:bg-gray-200 font-semibold py-6 text-base cursor-pointer"
+                                className="flex-1 bg-white text-black hover:bg-gray-200 font-semibold py-5 md:py-6 text-sm md:text-base cursor-pointer"
                             >
                                 {isGenerating ? (
                                     <>
@@ -445,26 +427,36 @@ export default function StoryCreationForm() {
                             </Button>
                             <Button
                                 variant="outline"
-                                className="flex-1 border-gray-700 text-white hover:bg-gray-900 py-6 text-base bg-transparent"
+                                className="flex-1 border-gray-700 text-white hover:bg-gray-900 py-5 md:py-6 text-sm md:text-base bg-transparent"
                             >
                                 Save Draft
                             </Button>
                         </div>
                     </div>
                 </div>
-                <div className="fixed h-[650px] ml-[900px]">
-                    <Separator orientation="vertical" className="mt-12 mx-6 bg-gray-700 w-[2px]" />
+
+                <div className="hidden lg:block">
+                    <Separator orientation="vertical" className="h-full bg-gray-700 w-[2px] mx-4 xl:mx-6" />
                 </div>
-                <div className="fixed ml-[1050px] mt-10 h-[650px] w-1/4 flex flex-col gap-5">
-                    <p className="text-2xl font-bold mt-2">Output Example</p>
-                    <div className="rounded-2xl">
-                        <video width="600" controls muted autoPlay className="rounded-2xl relative z-0" loop>
-                            <source src="/videoForOutputeg.mp4" type="video/mp4" />
-                            Your browser does not support the video tag.
-                        </video>
+
+                <div className="w-full lg:w-2/5 xl:w-1/3 p-4 md:p-6 lg:p-10">
+                    <div className="flex flex-col gap-4 md:gap-5 lg:sticky lg:top-4">
+                        <p className="text-xl md:text-2xl font-bold">Output Example</p>
+                        <div className="rounded-2xl overflow-hidden">
+                            <video 
+                                className="w-full rounded-2xl" 
+                                controls 
+                                muted 
+                                autoPlay 
+                                loop
+                            >
+                                <source src="/videoForOutputeg.mp4" type="video/mp4" />
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    )
+    );
 }
