@@ -74,7 +74,7 @@ Your task is to break down the given script into a list of visually compelling s
 
 
         //getting different scenes on the basis of script
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API}`, {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${process.env.GEMINI_API}`, {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json"

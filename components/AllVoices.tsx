@@ -33,7 +33,7 @@ export default function AllVoices(
         playAudio: (voice: Voices) => void, 
         openVoices: boolean, 
         setOpenVoices: Dispatch<SetStateAction<boolean>>,
-        toggleVoice: (voiceName: string) => void
+        toggleVoice: (voiceName: string, voice_id: string) => void
     }) {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedVoice, setSelectedVoice] = useState<string | null>(null);
@@ -174,7 +174,7 @@ export default function AllVoices(
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setSelectedVoice(voice.voice_id);
-                                                    toggleVoice(voice.name);
+                                                    toggleVoice(voice.name, voice.voice_id);
                                                 }}
                                                 className="bg-zinc-900 border-zinc-700 text-white hover:bg-zinc-800 hover:text-white"
                                             >

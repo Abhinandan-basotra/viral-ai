@@ -41,14 +41,13 @@ export default function FinalVideo() {
             const incomingScenes = data?.neededScenes ?? data?.allScenes ?? [];
             setProgress(data.progress);
 
-            if (data.done || !data || incomingScenes.length === 0) {
+            if (data.done || !data) {
                 clearInterval(interval);
                 isPollingDone.current = true;
                 return;
             }
 
             setProjectUrl(data.project);
-
             if (incomingScenes.length > 0) {
                 setScenes((prev) => {
                     const newOnes = incomingScenes.filter(
@@ -59,7 +58,7 @@ export default function FinalVideo() {
 
                 lastIdRef.current = incomingScenes[incomingScenes.length - 1].id;
             }
-        }, 5000);
+        }, 10000);
 
         return () => clearInterval(interval);
     }, []);

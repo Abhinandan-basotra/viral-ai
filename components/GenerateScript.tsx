@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 import { BASE_URL } from "@/lib/constants";
 import { Spinner } from "./ui/spinner";
 
-export default function GenerateScript({ setOpenScriptPage, generatedScript }: any) {
+export default function GenerateScript({ setOpenScriptPage, generatedScript, title }: any) {
     const [selectedDuration, setSelectedDuration] = useState<string | null>(null);
     const [idea, setIdea] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
@@ -36,11 +36,10 @@ export default function GenerateScript({ setOpenScriptPage, generatedScript }: a
                 })
             })
             const data = await res.json();
-            console.log(data);
-            
             if(data.success){
                 toast.success(data.message);
                 generatedScript(data.generatedScript);
+                title(data.title);
             }else {
                 toast.error(data.message);
             }            

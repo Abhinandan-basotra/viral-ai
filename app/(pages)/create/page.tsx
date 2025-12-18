@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
@@ -12,6 +11,11 @@ import GenerateScript from "@/components/GenerateScript";
 import { BASE_URL } from "@/lib/constants";
 import { LoaderThree } from "@/components/ui/loader";
 import AllVoices from "@/components/AllVoices";
+import { toast } from "react-toastify";
+import addProjectScript from "./addProjectScript";
+import { useRouter } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { getUserId } from "../login/getSession";
 
 interface Tune {
     id: number;
@@ -69,14 +73,13 @@ const GENRES = [
 ]
 
 export default function StoryCreationForm() {
-    const [title, setTitle] = useState("")
-    const [prompt, setPrompt] = useState("")
     const [selectedGenres, setSelectedGenres] = useState<string[]>([])
     const [selectedTones, setSelectedTones] = useState<string[]>([])
-    const [selectedVoices, setSelectedVoices] = useState<string[]>([])
+    const [selectedVoiceId, setSelectedVoiceId] = useState<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false)
     const [openScriptPage, setOpenScriptPage] = useState(false);
     const [script, setScript] = useState<string>("");
+    const [title, setTitle] = useState("");
     const [tunes, setTunes] = useState<Tune[]>([]);
     const [playingId, setPlayingId] = useState<string | number | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -84,6 +87,8 @@ export default function StoryCreationForm() {
     const [loading, setLoading] = useState(false);
     const [openVoices, setOpenVoices] = useState(false);
     const [aspectRatio, setAspectRatio] = useState("9:16");
+
+    const router = useRouter();
 
     const toggleGenre = (genre: string) => {
         setSelectedGenres((prev) => (prev.includes(genre) ? prev.filter((g) => g !== genre) : [genre]))
@@ -108,35 +113,39 @@ export default function StoryCreationForm() {
         }
     ]
 
-    const toggleVoice = (voiceName: string) => {
-        setSelectedVoices((prev) => (prev.includes(voiceName) ? prev.filter((v) => v !== voiceName) : [voiceName]))
-    }
+    const toggleVoice = (voiceId: string) => {
+        setSelectedVoiceId((prev) => (prev === voiceId ? null : voiceId));
+    };
 
     const handleGenerate = async () => {
         setIsGenerating(true)
-        await new Promise((resolve) => setTimeout(resolve, 2000))
+        try {
+            const userId = await getUserId();
+            
+            const projectId = await addProjectScript(script, title, Number(userId));
+
+            router.push(`/finalVideo?projectId=${projectId}`);
+            
+            fetch(`${BASE_URL}/api/v1/video/generateScenes`,{
+                method: 'POST',
+                headers: {
+                    'Content-type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    projectId: projectId,
+                    type: 'image',
+                    generationPreset: selectedGenres[0],
+                    aspectRatio: aspectRatio,
+                    voiceId: selectedVoiceId
+                })
+            })
+        } catch (error) {
+            console.log('Handle Generate: ',error);
+            toast('Something went wrong');
+        }
         setIsGenerating(false)
     }
-
-    useEffect(() => {
-        let cancelled = false;
-        const run = async () => {
-            try {
-                setLoading(true);
-                const res = await fetch(`${BASE_URL}/api/tunes`);
-                const data = await res.json();
-                if (!cancelled) setTunes(data.tunes);
-            } catch (error) {
-                console.log(error);
-            } finally {
-                if (!cancelled) setLoading(false);
-            }
-        };
-        run();
-        return () => {
-            cancelled = true;
-        };
-    }, [])
 
     const playAudio = (item: Tune | Voices) => {
         const id = 'id' in item ? item.id : item.voice_id;
@@ -187,9 +196,15 @@ export default function StoryCreationForm() {
         const run = async () => {
             try {
                 setLoading(true);
-                const res = await fetch(`${BASE_URL}/api/getVoices`);
-                const data = await res.json();
-                if (!cancelled) setVoices(data.voices);
+                const voiceRes = await fetch(`${BASE_URL}/api/getVoices`);
+                const voiceData = await voiceRes.json();
+
+                const tuneRes = await fetch(`${BASE_URL}/api/tunes`);
+                const tuneData = await tuneRes.json();
+                if (!cancelled){
+                    setVoices(voiceData.voices);
+                    setTunes(tuneData.tunes);
+                }
             } catch (error) {
                 console.log(error);
             } finally {
@@ -204,7 +219,7 @@ export default function StoryCreationForm() {
 
     return (
         <div className="min-h-screen">
-            {openScriptPage && <GenerateScript setOpenScriptPage={setOpenScriptPage} generatedScript={setScript} />}
+            {openScriptPage && <GenerateScript setOpenScriptPage={setOpenScriptPage} generatedScript={setScript} title={setTitle}/>}
             {openVoices && (
                 <AllVoices
                     voices={voices}
@@ -245,7 +260,7 @@ export default function StoryCreationForm() {
                                 className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 min-h-[150px] md:min-h-[200px] resize-none p-3 md:p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
                             />
 
-                            <p className="absolute bottom-3 md:bottom-4 right-4 md:right-6 text-gray-500 text-xs md:text-sm">
+                            <p className="absolute bottom-4 md:bottom-6 right-4 md:right-7 text-gray-500 text-xs md:text-sm">
                                 {script.length}/1200
                             </p>
                         </Card>
@@ -316,13 +331,13 @@ export default function StoryCreationForm() {
                                 ) : (
                                     <>
                                         {voices.slice(0, 4).map((voice: Voices) => {
-                                            const isSelected = selectedVoices.includes(voice.name);
+                                            const isSelected = selectedVoiceId === voice.voice_id;
                                             const isPlaying = playingId === voice.voice_id;
 
                                             return (
                                                 <Card
                                                     key={voice.voice_id}
-                                                    onClick={() => toggleVoice(voice.name)}
+                                                    onClick={() => toggleVoice(voice.voice_id)}
                                                     className={`relative cursor-pointer flex flex-col justify-between p-4 md:p-5 h-auto md:h-32 rounded-xl border border-gray-700 transition-all duration-300 
                                                         ${isSelected ? "ring-2 ring-yellow-500 bg-gray-800" : "hover:bg-gray-800"} 
                                                         ${isPlaying ? "shadow-lg shadow-yellow-500/30" : ""}
@@ -410,7 +425,7 @@ export default function StoryCreationForm() {
                         <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-4">
                             <Button
                                 onClick={handleGenerate}
-                                disabled={isGenerating || !script || selectedVoices.length === 0 || !aspectRatio}
+                                disabled={isGenerating || !script || !selectedVoiceId || !aspectRatio}
                                 className="flex-1 bg-white text-black hover:bg-gray-200 font-semibold py-5 md:py-6 text-sm md:text-base cursor-pointer"
                             >
                                 {isGenerating ? (
