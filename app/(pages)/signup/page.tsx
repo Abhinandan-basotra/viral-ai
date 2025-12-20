@@ -2,16 +2,20 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-label";
-import { redirect } from "next/navigation";
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import { toast } from "react-toastify";
-import { Video, Mail, Lock, User, Sparkles } from "lucide-react";
+import { Video, Mail, Lock, User, Sparkles, Loader } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function SignUp() {
+  const [isClciked, setIsClciked] = useState(false);
+  const router = useRouter();
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     try {
+      setIsClciked(true);
       const res = await fetch("/api/auth/register", {
         method: 'POST',
         body: JSON.stringify({
@@ -22,11 +26,14 @@ export default function SignUp() {
       });
       const data = await res.json();
       if(!data.success) toast.error(data.message);
-      else toast.success(data.message);
+      else{
+        toast.success(data.message)
+        router.push("/login");
+      }
     } catch (error) {
       console.error("❌ Registration failed:", error);
     } finally {
-      redirect("/login");
+      setIsClciked(false);
     }
   };
 
@@ -122,9 +129,10 @@ export default function SignUp() {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30"
+              disabled={isClciked}
+              className="cursor-pointer w-full py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30"
             >
-              Create Account
+              {isClciked ? (<>Creating Account <Loader/> </>) : "Create Account"}
             </Button>
           </form>
 

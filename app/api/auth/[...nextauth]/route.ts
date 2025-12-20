@@ -3,6 +3,7 @@ import NextAuth, { DefaultSession, DefaultUser, NextAuthOptions, type Session } 
 import type { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import prisma from "@/app/lib/db";
+import bcrypt from "bcrypt";
 
 declare module "next-auth" {
   interface Session {
@@ -39,7 +40,8 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!user) return null;
-        if (user.password !== credentials.password) return null;
+        const decryptedPassword = bcrypt.compareSync(credentials.password, user.password)
+        if (!decryptedPassword) return null;
 
         return {
           id: user.id.toString(),

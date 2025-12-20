@@ -29,13 +29,13 @@ async function Navbar({ user }: { user: any }) {
                 <>
                   <Link href="/dashboard">
                     <button
-                      className="px-6 py-2 bg-yellow-500 text-black rounded-small font-semibold hover:bg-yellow-400 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30 w-full flex items-center justify-center gap-2"
+                      className="px-6 py-2 bg-yellow-500 text-black rounded-small font-semibold hover:bg-yellow-400 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30 w-full flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <LayoutGrid />Dashboard
                     </button>
                   </Link>
                   <Link href='/api/auth/signout'>
-                    <button className="px-5 py-2 text-white hover:text-yellow-400 transition-colors duration-300 font-medium bg-transparent border border-yellow-600 rounded-full">
+                    <button className="cursor-pointer px-5 py-2 text-white hover:text-yellow-400 transition-colors duration-300 font-medium bg-transparent border border-yellow-600 rounded-ful">
                       Logout
                     </button>
                   </Link>
@@ -43,13 +43,13 @@ async function Navbar({ user }: { user: any }) {
               ) : (
                 <>
                   <Link href="/login">
-                    <button className="px-5 py-2 text-white hover:text-yellow-400 transition-colors duration-300 font-medium bg-transparent border border-yellow-600 rounded-full">
+                    <button className="cursor-pointer px-5 py-2 text-white hover:text-yellow-400 transition-colors duration-300 font-medium bg-transparent border border-yellow-600 rounded-full">
                       Login
                     </button>
                   </Link>
                   <Link href="/signup">
                     <button
-                      className="px-6 py-2 bg-yellow-500 text-black rounded-full font-semibold hover:bg-yellow-400 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30"
+                      className="cursor-pointer px-6 py-2 bg-yellow-500 text-black rounded-full font-semibold hover:bg-yellow-400 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30"
                     >
                       Get Started
                     </button>
