@@ -9,7 +9,7 @@ export async function POST(req: Request) {
         const audioId = data.audioId;
         const audioText = data.audioText
 
-        const apikey = process.env.VOICE_GENERATION_KEY_2;
+        const apikey = process.env.VOICE_GENERATION_KEY;
         if (!apikey) return NextResponse.json({ message: "api key is not present", success: false }, { status: 404 })
 
         const text = audioText;
