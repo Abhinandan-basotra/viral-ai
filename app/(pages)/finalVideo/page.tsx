@@ -58,7 +58,7 @@ export default function FinalVideo() {
 
                 lastIdRef.current = incomingScenes[incomingScenes.length - 1].id;
             }
-        }, 10000);
+        }, 100000);
 
         return () => clearInterval(interval);
     }, []);

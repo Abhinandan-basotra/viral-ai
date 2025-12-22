@@ -14,6 +14,7 @@ export async function GET(req: NextRequest){
                 userId: Number(session.user.id)
             }
         })
+        
         return NextResponse.json({message: "All Projects Fetched Successfully", success: true, projects}, {status: 200});
     } catch (error) {
         console.log(error);

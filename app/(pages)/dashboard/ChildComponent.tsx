@@ -2,14 +2,16 @@
 import CreateVideo from "@/components/CreateVideo";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 import { TypewriterEffect } from "@/components/ui/typewriter-effect";
-import { Calendar, ChevronUp, Home, Inbox, Search, Settings, User2, Video } from "lucide-react";
+import { BASE_URL } from "@/lib/constants";
+import { Calendar, ChevronUp, Home, Inbox, Loader, Search, Settings, User2, Video } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 
-export default function ChildComponent({email, name}:{
+export default function ChildComponent({ email, name }: {
   email: string,
-  name: string 
+  name: string
 }) {
   const [show, setShow] = useState(false);
 
@@ -49,7 +51,7 @@ export default function ChildComponent({email, name}:{
       ) : (
         <>
           <SidebarProvider>
-            <SidebarComponent name={name} email={email}/>
+            <SidebarComponent name={name} email={email} />
             <main className="flex-1">
               <div className="p-4">
                 <SidebarTrigger />
@@ -63,34 +65,46 @@ export default function ChildComponent({email, name}:{
   );
 }
 
-function SidebarComponent({name, email} : {name: string, email: string}) {
-  const items = [
-    {
-      title: "Home",
-      url: "#",
-      icon: Home,
-    },
-    {
-      title: "Inbox",
-      url: "#",
-      icon: Inbox,
-    },
-    {
-      title: "Calendar",
-      url: "#",
-      icon: Calendar,
-    },
-    {
-      title: "Search",
-      url: "#",
-      icon: Search,
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings,
-    },
-  ];
+interface Project {
+  status: string;
+  id: string;
+  userId: number;
+  title: string;
+  description: string | null;
+  script: string;
+  progress: number;
+  finalUrl: string | null;
+  expectedLength: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+function SidebarComponent({ name, email }: { name: string, email: string }) {
+  const [projects, setProjects] = useState<Project[]>();
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    const getProjects = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${BASE_URL}/api/v1/projects`, {
+          method: "GET",
+          headers: {
+            "Accept-type": "application/json",
+          },
+        });
+        const data = await res.json();
+        setProjects(data.projects);
+        
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getProjects();
+  }, []);
+
   return (
     <>
       <Sidebar>
@@ -110,21 +124,25 @@ function SidebarComponent({name, email} : {name: string, email: string}) {
           <SidebarGroup>
             <SidebarGroupLabel className="text-lg">My Projects</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
-                {(items.length > 0) ? items.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <a href={item.url}>
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )) : <>
-                  <div className="mt-5 ml-2 text-sm text-gray-200">
-                    <p>No projects found.</p>
+              <SidebarMenu className="mt-6">
+                {loading ? (
+                  <ProjectSkeleton />
+                ) : projects && projects.length > 0 ? (
+                  projects.map((project) => (
+                    <SidebarMenuItem key={project.id} >
+                      <SidebarMenuButton asChild>
+                        <a href="#">
+                          <span className="truncate">{project.title}</span>
+                        </a>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))
+                ) : (
+                  <div className="mt-4 px-3 text-sm text-gray-400">
+                    No projects found.
                   </div>
-                </>}
+                )}
+
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -152,7 +170,7 @@ function SidebarComponent({name, email} : {name: string, email: string}) {
                   className="w-[--radix-popper-anchor-width] mb-2"
                 >
                   <DropdownMenuItem className="cursor-pointer text-red-400 focus:text-red-400" onClick={() => signOut()}>
-                      <span>Sign out</span>
+                    <span>Sign out</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -162,4 +180,20 @@ function SidebarComponent({name, email} : {name: string, email: string}) {
       </Sidebar>
     </>
   )
+}
+
+function ProjectSkeleton() {
+  return (
+    <div className="space-y-2 px-2">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex items-center gap-3 rounded-md px-3 py-2"
+        >
+          <Skeleton className="h-4 w-4 rounded-sm" />
+          <Skeleton className="h-4 w-full max-w-[140px]" />
+        </div>
+      ))}
+    </div>
+  );
 }
