@@ -33,10 +33,10 @@ export default function AllVoices(
         playAudio: (voice: Voices) => void, 
         openVoices: boolean, 
         setOpenVoices: Dispatch<SetStateAction<boolean>>,
-        toggleVoice: (voiceName: string, voice_id: string) => void
+        toggleVoice: (voice_id: string) => void
     }) {
     const [searchQuery, setSearchQuery] = useState("");
-    const [selectedVoice, setSelectedVoice] = useState<string | null>(null);
+    const [selectedVoiceId, setSelectedVoiceId] = useState<string | null>(null);
     const [languageFilter, setLanguageFilter] = useState("all");
     const [genderFilter, setGenderFilter] = useState("all");
     const [ageFilter, setAgeFilter] = useState("all");
@@ -59,7 +59,6 @@ export default function AllVoices(
                 </SheetHeader>
 
                 <div className="space-y-4 p-4">
-                    {/* Search Input with shadcn Input component */}
                     <div className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                         <Input
@@ -71,7 +70,6 @@ export default function AllVoices(
                         />
                     </div>
 
-                    {/* Filters with shadcn Select components */}
                     <div className="flex gap-3 flex-wrap">
                         <Select value={languageFilter} onValueChange={setLanguageFilter}>
                             <SelectTrigger className="w-[140px] bg-zinc-900 border-zinc-800 text-white cursor-pointer">
@@ -124,7 +122,7 @@ export default function AllVoices(
                         {filteredVoices.map((voice) => (
                             <div
                                 key={voice.voice_id}
-                                className={`p-4 rounded-lg border ${selectedVoice === voice.voice_id
+                                className={`p-4 rounded-lg border ${selectedVoiceId === voice.voice_id
                                     ? 'bg-zinc-900 border-zinc-700'
                                     : 'bg-zinc-950 border-zinc-800 hover:bg-zinc-900'
                                     } transition-colors cursor-pointer`}
@@ -158,7 +156,7 @@ export default function AllVoices(
                                         <Badge variant="outline" className="px-3 py-1 text-xs bg-zinc-800 text-zinc-400 border-zinc-700">
                                             {voice.labels.descriptive || 'Unknown'}
                                         </Badge>
-                                        {selectedVoice === voice.voice_id ? (
+                                        {selectedVoiceId === voice.voice_id ? (
                                             <Button 
                                                 variant="secondary" 
                                                 size="sm"
@@ -173,8 +171,8 @@ export default function AllVoices(
                                                 size="sm"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    setSelectedVoice(voice.voice_id);
-                                                    toggleVoice(voice.name, voice.voice_id);
+                                                    setSelectedVoiceId(voice.voice_id);
+                                                    toggleVoice(voice.voice_id);
                                                 }}
                                                 className="bg-zinc-900 border-zinc-700 text-white hover:bg-zinc-800 hover:text-white"
                                             >
