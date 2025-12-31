@@ -9,6 +9,10 @@ import { motion } from "framer-motion";
 import { ScrollAreaPro } from "@/components/ui/scroll-areapro";
 import { BackgroundGradient } from "@/components/ui/background-gradient";
 import { Progress } from "@/components/ui/progress";
+import ShinyText from "@/components/ui/ShinyText"
+import GradientText from "@/components/ui/GradientText"
+import { useSession } from "next-auth/react";
+
 
 export default function FinalVideo() {
     const lastIdRef = useRef<string | null>(null);
@@ -17,6 +21,9 @@ export default function FinalVideo() {
     const [progress, setProgress] = useState(0);
     const isPollingDone = useRef(false);
     const projectIdRef = useRef<string | null>(null);
+    const session = useSession();
+    const email = session?.data?.user.email;
+    const name = session?.data?.user.name;
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -58,7 +65,7 @@ export default function FinalVideo() {
 
                 lastIdRef.current = incomingScenes[incomingScenes.length - 1].id;
             }
-        }, 100000);
+        }, 10000);
 
         return () => clearInterval(interval);
     }, []);
@@ -74,8 +81,8 @@ export default function FinalVideo() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4 }}
                         className="col-span-12 lg:col-span-5"
-                    >
-                        <Card className="rounded-2xl shadow-lg border border-gray-700 bg-gray-900/60 backdrop-blur-md">
+                    >   
+                        <Card className="rounded-2xl shadow-lg border border-gray-700 bg-gray-900/60 backdrop-blur-md h-full">
                             <CardHeader>
                                 <div className="flex items-center justify-between">
                                     <CardTitle className="text-lg font-semibold text-white">
@@ -88,7 +95,7 @@ export default function FinalVideo() {
 
                             <CardContent className="p-0">
                                 <ScrollAreaPro
-                                    className="h-[70vh] scrollbar-hide"
+                                    className="h-[80vh] scrollbar-hide"
                                     showProgress="vertical"
                                     type="hover"
                                 >
@@ -130,11 +137,6 @@ export default function FinalVideo() {
                                     <CardTitle className="text-lg font-semibold text-white">
                                         Final Video
                                     </CardTitle>
-                                    {projectUrl && (
-                                        <span className="text-xs text-gray-400 truncate max-w-[60%]">
-                                            {projectUrl}
-                                        </span>
-                                    )}
                                 </div>
                             </CardHeader>
                             <Separator className="mb-2" />
@@ -143,9 +145,26 @@ export default function FinalVideo() {
 
                                 <div className="mb-6">
                                     <div className="flex items-center justify-between mb-1">
-                                        <span className="text-sm font-medium text-gray-300">
-                                            Processing Video
-                                        </span>
+                                        <div>
+                                            {
+                                                (progress < 100) ?
+                                                    <ShinyText
+                                                        text="Processsing"
+                                                        disabled={false}
+                                                        speed={3}
+                                                        className='custom-class text-sm font-medium text-gray-300'
+                                                    />
+                                                    :
+                                                    <GradientText
+                                                        colors={["#40ffaa", "#4079ff", "#40ffaa", "#4079ff", "#40ffaa"]}
+                                                        animationSpeed={3}
+                                                        showBorder={false}
+                                                        className="text-sm font-medium text-gray-300"
+                                                    >
+                                                        Generated
+                                                    </GradientText>
+                                            }
+                                        </div>
                                         <span className="text-sm text-gray-400">
                                             {progress}%
                                         </span>
@@ -157,8 +176,15 @@ export default function FinalVideo() {
                                     />
 
                                     <div className="mt-2 text-xs text-gray-400 flex items-center gap-2">
-                                        <span className="inline-block h-2 w-2 animate-ping rounded-full bg-green-400/80" />
-                                        <span>{progress < 100 ? `Generating frame ${scenes.length}` : "Final Video"}</span>
+                                        <span className={`inline-block h-2 w-2 ${(progress < 100) ? 'animate-ping' : ''} rounded-full bg-green-400/80`} />
+                                        <span>
+                                            {
+                                            progress < 100 ? 
+                                            `Generating frame ${scenes.reduce((GeneratingSceneNum, scene) => scene.finalUrl? GeneratingSceneNum+1 : GeneratingSceneNum, 0)}`
+                                            : 
+                                            "Final Video"
+                                            }
+                                            </span>
                                     </div>
                                 </div>
 
@@ -192,6 +218,6 @@ export default function FinalVideo() {
 
                 </div>
             </div>
-        </div>
+            </div>
     );
 }

@@ -18,6 +18,7 @@ export async function GET(req: NextRequest, { params }: RouteParam) {
             }
         })
         if(!project) return NextResponse.json({message: "Project not found", success: false}, {status: 404});
+
         const progress = project.progress;
         const lastScene = await prisma.scene.findFirst({
             where: {
@@ -49,7 +50,7 @@ export async function GET(req: NextRequest, { params }: RouteParam) {
             }
         })
         if (!neededScenes) return NextResponse.json({ done: true , project: project.finalUrl, progress: project.progress})
-        return NextResponse.json({ messsage: 'Needed Scenes Fetched', neededScenes, success: true, progress: progress, project: project.finalUrl }, { status: 200 })
+        return NextResponse.json({ messsage: 'Needed Scenes Fetched', neededScenes, success: true, progress: progress, project: project.finalUrl, done: true }, { status: 200 })
     } catch (error) {
         console.log(error);
         return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });

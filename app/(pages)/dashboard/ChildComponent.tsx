@@ -79,7 +79,7 @@ interface Project {
   updatedAt: Date;
 }
 
-function SidebarComponent({ name, email }: { name: string, email: string }) {
+export function SidebarComponent({ name, email }: { name: string, email: string }) {
   const [projects, setProjects] = useState<Project[]>();
   const [loading, setLoading] = useState(false);
   useEffect(() => {

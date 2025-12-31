@@ -15,7 +15,7 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { getServerSession } from "next-auth";
 import addProjectScript from "@/app/(pages)/dashboard/addProjectScript";
-import { getUserId } from "@/app/(pages)/login/getSession";
+import { getUser } from "@/app/(pages)/login/getSession";
 
 interface Tune {
     id: number;
@@ -120,7 +120,9 @@ export default function CreateVideo() {
     const handleGenerate = async () => {
         setIsGenerating(true)
         try {
-            const userId = await getUserId();
+            const user = await getUser();
+            const userId = user?.user.id;
+            
             
             const projectId = await addProjectScript(script, title, Number(userId));
 
