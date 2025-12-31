@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import ShinyText from "@/components/ui/ShinyText"
 import GradientText from "@/components/ui/GradientText"
 import { useSession } from "next-auth/react";
+import { Download } from "lucide-react";
 
 
 export default function FinalVideo() {
@@ -70,18 +71,39 @@ export default function FinalVideo() {
         return () => clearInterval(interval);
     }, []);
 
+    const handleDownload = async () => {
+    if (!projectUrl) return;
+    
+    try {
+        const response = await fetch(projectUrl);
+        const blob = await response.blob();
+        
+        const url = window.URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `video-${projectIdRef.current || 'export'}.mp4`;
+        document.body.appendChild(a);
+        a.click();
+        
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        console.error('Download failed:', error);
+    }
+};
+
     return (
         <div className="min-h-screen bg-black p-6">
             <div className="mx-auto max-w-7xl space-y-6">
                 <div className="grid grid-cols-12 gap-6">
-                    
                     {/* Scenes Section */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.4 }}
                         className="col-span-12 lg:col-span-5"
-                    >   
+                    >
                         <Card className="rounded-2xl shadow-lg border border-gray-700 bg-gray-900/60 backdrop-blur-md h-full">
                             <CardHeader>
                                 <div className="flex items-center justify-between">
@@ -137,6 +159,18 @@ export default function FinalVideo() {
                                     <CardTitle className="text-lg font-semibold text-white">
                                         Final Video
                                     </CardTitle>
+                                    {
+                                        progress === 100 &&
+                                        <div>
+                                            <button
+                                                className="cursor-pointer bg-[#F7BF00] hover:bg-[#e6b200]"
+                                                onClick={handleDownload}
+                                            >
+                                                <Download />
+                                            </button>
+                                        </div>
+                                    }
+
                                 </div>
                             </CardHeader>
                             <Separator className="mb-2" />
@@ -179,12 +213,12 @@ export default function FinalVideo() {
                                         <span className={`inline-block h-2 w-2 ${(progress < 100) ? 'animate-ping' : ''} rounded-full bg-green-400/80`} />
                                         <span>
                                             {
-                                            progress < 100 ? 
-                                            `Generating frame ${scenes.reduce((GeneratingSceneNum, scene) => scene.finalUrl? GeneratingSceneNum+1 : GeneratingSceneNum, 0)}`
-                                            : 
-                                            "Final Video"
+                                                progress < 100 ?
+                                                    `Generating frame ${scenes.reduce((GeneratingSceneNum, scene) => scene.finalUrl ? GeneratingSceneNum + 1 : GeneratingSceneNum, 0)}`
+                                                    :
+                                                    "Final Video"
                                             }
-                                            </span>
+                                        </span>
                                     </div>
                                 </div>
 
@@ -218,6 +252,6 @@ export default function FinalVideo() {
 
                 </div>
             </div>
-            </div>
+        </div>
     );
 }
