@@ -2,6 +2,7 @@ import { BackgroundBeams } from "@/components/ui/background-beams";
 import { Video, Youtube, Instagram, Facebook, Sparkles, LayoutGrid } from "lucide-react";
 import { getServerSession } from "next-auth";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 const sampleImages = [
   '/img1.jpeg',
@@ -14,14 +15,16 @@ async function Navbar({ user }: { user: any }) {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-yellow-600/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-3 group cursor-pointer">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <Video className="w-6 h-6 text-black" />
+          <Link href='/'>
+            <div className="flex items-center space-x-3 group cursor-pointer">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <Video className="w-6 h-6 text-black" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
+                ViralAI
+              </span>
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-              ViralAI
-            </span>
-          </div>
+          </Link>
 
           <div className="flex items-center space-x-4">
             {

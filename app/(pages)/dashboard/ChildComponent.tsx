@@ -131,7 +131,7 @@ export function SidebarComponent({ name, email }: { name: string, email: string 
                   projects.map((project) => (
                     <SidebarMenuItem key={project.id} >
                       <SidebarMenuButton asChild>
-                        <a href="#">
+                        <a href={`/finalVideo?projectId=${project.id}`}>
                           <span className="truncate">{project.title}</span>
                         </a>
                       </SidebarMenuButton>
