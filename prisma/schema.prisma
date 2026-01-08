@@ -34,7 +34,6 @@ model Project {
   audio       Audio[]
   assets      Asset[]
   finalUrl    String?
-  renderJobs  RenderQueue[]
   status      String    @default("Generating")
   expectedLength Int?
   createdAt   DateTime  @default(now())
@@ -43,7 +42,7 @@ model Project {
 
 model Scene {
   id            String        @id @default(cuid())
-  project       Project       @relation(fields: [projectId], references: [id])
+  project       Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId     String
   sceneNumber   Int
   description   String    
@@ -53,7 +52,6 @@ model Scene {
   finalUrl     String?         // final rendered video url
   imageAssets   Asset[]       @relation("SceneImages")
   audioAssets   Audio[]       @relation("SceneAudios")      
-  renderJobs    RenderQueue[] 
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 }
@@ -61,7 +59,7 @@ model Scene {
 
 model Asset {
   id          String   @id @default(cuid())
-  project     Project  @relation(fields: [projectId], references: [id])
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId   String
   type        String 
   url         String
@@ -72,9 +70,9 @@ model Asset {
 
 model Audio {
   id        String   @id @default(cuid())
-  project   Project  @relation(fields: [projectId], references: [id])
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String
-  scene     Scene?   @relation(fields: [sceneId], references: [id], name: "SceneAudios")
+  scene     Scene?   @relation(fields: [sceneId], references: [id], name: "SceneAudios", onDelete: Cascade)
   sceneId   String?
   type      String // "narration", "background"  
   text      String?
@@ -88,21 +86,6 @@ model Audio {
   duration  Int?     // in seconds
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt   @default(now())
-}
-
-model RenderQueue {
-  id        String   @id @default(cuid())
-  project   Project  @relation(fields: [projectId], references: [id])
-  projectId String
-  scene     Scene?   @relation(fields: [sceneId], references: [id])
-  sceneId   String?
-  jobType   String   // "imageGeneration", "audioSync", "videoRender"
-  priority  Int      @default(0)
-  status    String   @default("pending") // "pending", "inProgress", "completed", "failed"
-  attempts  Int      @default(0)
-  workerId  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model Tunes{

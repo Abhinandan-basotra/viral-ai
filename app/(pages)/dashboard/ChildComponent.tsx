@@ -1,13 +1,16 @@
 "use client";
 import CreateVideo from "@/components/CreateVideo";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TypewriterEffect } from "@/components/ui/typewriter-effect";
 import { BASE_URL } from "@/lib/constants";
-import { Calendar, ChevronUp, Home, Inbox, Loader, Search, Settings, User2, Video } from "lucide-react";
+import { Calendar, ChevronUp, Home, Inbox, Loader, Search, Settings, Trash, User2, Video } from "lucide-react";
 import { signOut } from "next-auth/react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import { deleteVideo } from "../finalVideo/DeleteVideoPermanently";
 
 export default function ChildComponent({ email, name }: {
   email: string,
@@ -82,6 +85,8 @@ interface Project {
 export function SidebarComponent({ name, email }: { name: string, email: string }) {
   const [projects, setProjects] = useState<Project[]>();
   const [loading, setLoading] = useState(false);
+  const [hoveredProjectId, setHoveredProjectId] = useState<string | null>(null);
+  const [isTrashClicked, setIsTrashClicked] = useState<boolean>(false)
   useEffect(() => {
     const getProjects = async () => {
       try {
@@ -94,7 +99,7 @@ export function SidebarComponent({ name, email }: { name: string, email: string 
         });
         const data = await res.json();
         setProjects(data.projects);
-        
+
       } catch (error) {
         console.error(error);
       } finally {
@@ -105,20 +110,28 @@ export function SidebarComponent({ name, email }: { name: string, email: string 
     getProjects();
   }, []);
 
+  const handleDeleteVideo = async (projectId: string) => {
+    await deleteVideo(projectId, '');
+    setProjects(prev => prev?.filter(p => p.id != projectId));
+    setIsTrashClicked(false)
+  }
+
   return (
     <>
       <Sidebar>
         <SidebarHeader
           className="mt-4 ml-2"
         >
-          <div className="flex items-center space-x-3 group cursor-pointer">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-              <Video className="w-6 h-6 text-black" />
+          <Link href='/'>
+            <div className="flex items-center space-x-3 group cursor-pointer">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                <Video className="w-6 h-6 text-black" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
+                ViralAI
+              </span>
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
-              ViralAI
-            </span>
-          </div>
+          </Link>
         </SidebarHeader>
         <SidebarContent>
           <SidebarGroup>
@@ -129,13 +142,41 @@ export function SidebarComponent({ name, email }: { name: string, email: string 
                   <ProjectSkeleton />
                 ) : projects && projects.length > 0 ? (
                   projects.map((project) => (
-                    <SidebarMenuItem key={project.id} >
-                      <SidebarMenuButton asChild>
-                        <a href={`/finalVideo?projectId=${project.id}`}>
-                          <span className="truncate">{project.title}</span>
-                        </a>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
+                    <SidebarMenuItem key={project.id}>
+  <SidebarMenuButton asChild>
+    <div
+      className="flex items-center justify-between w-full px-2 py-1 rounded-md"
+      onMouseEnter={() => setHoveredProjectId(project.id)}
+      onMouseLeave={() => setHoveredProjectId(null)}
+    >
+      <a
+        href={`/finalVideo?projectId=${project.id}`}
+        className="truncate"
+      >
+        {project.title}
+      </a>
+
+      {hoveredProjectId === project.id && (
+        <>
+        {
+          isTrashClicked? 
+          <Loader/>
+          :
+          <Trash
+          className="cursor-pointer w-4 h-4 text-red-400 hover:text-red-500 hover:bg-red-500/10 rounded-sm p-0.5 transition"
+          onClick={(e) => {
+            e.preventDefault();
+            setIsTrashClicked(true)
+            handleDeleteVideo(project.id);
+          }}
+        />
+        }
+        </>
+      )}
+    </div>
+  </SidebarMenuButton>
+</SidebarMenuItem>
+
                   ))
                 ) : (
                   <div className="mt-4 px-3 text-sm text-gray-400">

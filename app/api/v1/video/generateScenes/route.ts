@@ -3,6 +3,8 @@ import prisma from "@/app/lib/db";
 import fs from "fs";
 import { updateSceneStatus } from "@/app/lib/updateSceneStatus";
 import { uploadVideoToCloudinary } from "@/app/lib/cloudinary/uploadVideoToCloudinary";
+import { isCancelled } from "./isCancelled";
+import { deleteVideo } from "@/app/(pages)/finalVideo/DeleteVideoPermanently";
 
 export async function updateProjectStatus(projectId: string, status: string) {
     await prisma.project.update({
@@ -139,6 +141,10 @@ Your task is to break down the given script into a list of visually compelling s
         const finalOutputPath = `finalOutput_${projectId}.mp4`;
         const totalScenes = scenes.length;
         for (let i = 0; i < totalScenes; i++) {
+            if(await isCancelled(projectId)){
+                await deleteVideo(projectId, finalOutputPath);
+                return NextResponse.json({message: 'Cancelled', success: false})
+            }
             const scene = scenes[i];
             //making assets according to scene
             const res = await fetch(`${baseUrl}/api/v1/video/generateAssets`, {
