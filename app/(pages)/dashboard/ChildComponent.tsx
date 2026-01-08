@@ -1,7 +1,6 @@
 "use client";
 import CreateVideo from "@/components/CreateVideo";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TypewriterEffect } from "@/components/ui/typewriter-effect";
@@ -19,7 +18,11 @@ export default function ChildComponent({ email, name }: {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    setShow(true);
+    const visited = localStorage.getItem("visited-dashboard-page");
+    if(!visited){
+      setShow(true);
+      localStorage.setItem('visited-dashboard-page', 'true');
+    }
     const timer = setTimeout(() => {
       setShow(false);
     }, 3000);
