@@ -1,4 +1,5 @@
 import DashBoardButton from "@/components/DashBoardButton";
+import Footer from "@/components/Footer";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import { Video, Youtube, Instagram, Facebook, Sparkles, LayoutGrid } from "lucide-react";
 import { getServerSession } from "next-auth";
@@ -149,6 +150,7 @@ export default async function Home() {
           </div>
         )
       }
+      <Footer/>
     </div>
   );
 }
