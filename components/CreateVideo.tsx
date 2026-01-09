@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { ChevronDown, Pause, Play, Proportions, RectangleHorizontal, RectangleVertical, Sparkles, Square, Wand2, WandSparkles } from "lucide-react"
 import { Separator } from "@/components/ui/separator";
 import GenerateScript from "@/components/GenerateScript";
@@ -13,10 +12,9 @@ import { LoaderThree } from "@/components/ui/loader";
 import AllVoices from "@/components/AllVoices";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
-import { getServerSession } from "next-auth";
 import addProjectScript from "@/app/(pages)/dashboard/addProjectScript";
 import { getUser } from "@/app/(pages)/login/getSession";
-
+import { Dialog, DialogTrigger } from "./ui/dialog";
 interface Tune {
     id: number;
     name: string;
@@ -122,13 +120,13 @@ export default function CreateVideo() {
         try {
             const user = await getUser();
             const userId = user?.user.id;
-            
-            
+
+
             const projectId = await addProjectScript(script, title, Number(userId));
 
             router.push(`/finalVideo?projectId=${projectId}`);
-            
-            fetch(`${BASE_URL}/api/v1/video/generateScenes`,{
+
+            fetch(`${BASE_URL}/api/v1/video/generateScenes`, {
                 method: 'POST',
                 headers: {
                     'Content-type': 'application/json',
@@ -143,7 +141,7 @@ export default function CreateVideo() {
                 })
             })
         } catch (error) {
-            console.log('Handle Generate: ',error);
+            console.log('Handle Generate: ', error);
             toast('Something went wrong');
         }
         setIsGenerating(false)
@@ -225,7 +223,6 @@ export default function CreateVideo() {
 
     return (
         <div className="min-h-screen">
-            {openScriptPage && <GenerateScript setOpenScriptPage={setOpenScriptPage} generatedScript={setScript} title={setTitle}/>}
             {openVoices && (
                 <AllVoices
                     voices={voices}
@@ -235,7 +232,7 @@ export default function CreateVideo() {
                     toggleVoice={toggleVoice}
                 />
             )}
-            
+
             <div className="flex flex-col lg:flex-row gap-6 lg:gap-0">
                 <div className="w-full lg:w-3/5 xl:w-2/3">
                     <div className="space-y-6 md:space-y-8 p-4 md:p-6 lg:p-10">
@@ -249,12 +246,17 @@ export default function CreateVideo() {
                                 <Label htmlFor="script" className="text-white font-semibold">
                                     Video Script
                                 </Label>
-                                <Button
-                                    className="cursor-pointer w-full sm:w-auto"
-                                    onClick={() => setOpenScriptPage(true)}
-                                >
-                                    <WandSparkles className="w-4 h-4 mr-2" />AI Script Writer
-                                </Button>
+                                <Dialog>
+                                    <DialogTrigger onClick={() => setOpenScriptPage(true)} className="cursor-pointer sm:w-auto flex justify-center items-center">
+                                        <>
+                                            <WandSparkles className="w-4 h-4 mr-2" />AI Script Writer
+                                        </>
+                                    </DialogTrigger>
+                                    {
+                                        openScriptPage && <GenerateScript setOpen={setOpenScriptPage} generatedScript={setScript} title={setTitle} />
+                                    }
+
+                                </Dialog>
                             </div>
 
                             <Textarea
@@ -278,9 +280,8 @@ export default function CreateVideo() {
                                     <Card
                                         key={genre.name}
                                         onClick={() => toggleGenre(genre.name)}
-                                        className={`relative cursor-pointer w-full h-20 md:h-24 rounded-xl border border-gray-700 overflow-hidden bg-cover bg-center transition-all duration-300 ${
-                                            selectedGenres.includes(genre.name) ? "ring-2 ring-yellow-500 scale-105" : "hover:scale-105"
-                                        }`}
+                                        className={`relative cursor-pointer w-full h-20 md:h-24 rounded-xl border border-gray-700 overflow-hidden bg-cover bg-center transition-all duration-300 ${selectedGenres.includes(genre.name) ? "ring-2 ring-yellow-500 scale-105" : "hover:scale-105"
+                                            }`}
                                         style={{ backgroundImage: `url(${genre.image})` }}
                                     >
                                         <div className="absolute inset-0 flex flex-col items-start justify-end">
@@ -304,9 +305,8 @@ export default function CreateVideo() {
                                             <Card
                                                 key={tone.id}
                                                 onClick={() => toggleTone(tone.name)}
-                                                className={`cursor-pointer flex flex-row justify-between p-3 md:p-4 h-auto md:h-20 rounded-xl border border-gray-700 transition-all duration-300 ${
-                                                    selectedTones.includes(tone.name) ? "ring-2 ring-yellow-500 scale-105 bg-gray-800" : "hover:bg-gray-800"
-                                                }`}
+                                                className={`cursor-pointer flex flex-row justify-between p-3 md:p-4 h-auto md:h-20 rounded-xl border border-gray-700 transition-all duration-300 ${selectedTones.includes(tone.name) ? "ring-2 ring-yellow-500 scale-105 bg-gray-800" : "hover:bg-gray-800"
+                                                    }`}
                                             >
                                                 <div className="flex flex-col justify-center flex-1 min-w-0 pr-2">
                                                     <span className="font-semibold text-white text-sm md:text-base truncate">{tone.name}</span>
@@ -386,7 +386,7 @@ export default function CreateVideo() {
                                     </>
                                 )}
                             </div>
-                            
+
                             <div className="flex justify-center">
                                 <Button
                                     className="flex items-center gap-2 cursor-pointer w-full sm:w-auto"
@@ -402,7 +402,7 @@ export default function CreateVideo() {
 
                         <div className="flex flex-col gap-3 md:gap-4 md:ml-8">
                             <div className="flex items-center gap-2">
-                                <Proportions className="w-5 h-5" /> 
+                                <Proportions className="w-5 h-5" />
                                 <span className="font-semibold">Aspect Ratio</span>
                             </div>
                             <div className="flex gap-2">
@@ -414,9 +414,8 @@ export default function CreateVideo() {
                                         return (
                                             <Button
                                                 key={ratio.ratio}
-                                                className={`flex items-center gap-2 cursor-pointer text-white px-3 py-2 rounded-xl transition-all duration-300 ${
-                                                    isSelected ? "bg-gray-700 hover:bg-gray-600" : "bg-transparent hover:bg-gray-800"
-                                                }`}
+                                                className={`flex items-center gap-2 cursor-pointer text-white px-3 py-2 rounded-xl transition-all duration-300 ${isSelected ? "bg-gray-700 hover:bg-gray-600" : "bg-transparent hover:bg-gray-800"
+                                                    }`}
                                                 onClick={() => setAspectRatio(ratio.ratio)}
                                             >
                                                 <Icon color="white" className="w-4 h-4 md:w-5 md:h-5" />
@@ -464,11 +463,11 @@ export default function CreateVideo() {
                     <div className="flex flex-col gap-4 md:gap-5 lg:sticky lg:top-4">
                         <p className="text-xl md:text-2xl font-bold">Output Example</p>
                         <div className="rounded-2xl overflow-hidden">
-                            <video 
-                                className="w-full rounded-2xl" 
-                                controls 
-                                muted 
-                                autoPlay 
+                            <video
+                                className="w-full rounded-2xl"
+                                controls
+                                muted
+                                autoPlay
                                 loop
                             >
                                 <source src="/videoForOutputeg.mp4" type="video/mp4" />
