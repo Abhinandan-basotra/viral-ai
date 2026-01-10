@@ -11,8 +11,12 @@ import { BackgroundGradient } from "@/components/ui/background-gradient";
 import { Progress } from "@/components/ui/progress";
 import ShinyText from "@/components/ui/ShinyText"
 import GradientText from "@/components/ui/GradientText"
-import { useSession } from "next-auth/react";
-import { Download } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { cancelProject } from "./DeleteVideoPermanently";
 
 
 export default function FinalVideo() {
@@ -22,9 +26,7 @@ export default function FinalVideo() {
     const [progress, setProgress] = useState(0);
     const isPollingDone = useRef(false);
     const projectIdRef = useRef<string | null>(null);
-    const session = useSession();
-    const email = session?.data?.user.email;
-    const name = session?.data?.user.name;
+    const [isBackClicked, setIsBackClicked] = useState(false);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -48,8 +50,10 @@ export default function FinalVideo() {
 
             const incomingScenes = data?.neededScenes ?? data?.allScenes ?? [];
             setProgress(data.progress);
+            console.log(data);
+            console.log(data.projectStatus);
 
-            if (data.done || !data) {
+            if (data.projectStatus === 'Generated' || !data || data.projectStatus === 'Cancelled') {
                 clearInterval(interval);
                 isPollingDone.current = true;
                 return;
@@ -72,32 +76,58 @@ export default function FinalVideo() {
     }, []);
 
     const handleDownload = async () => {
-    if (!projectUrl) return;
-    
-    try {
-        const response = await fetch(projectUrl);
-        const blob = await response.blob();
-        
-        const url = window.URL.createObjectURL(blob);
-        
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `video-${projectIdRef.current || 'export'}.mp4`;
-        document.body.appendChild(a);
-        a.click();
-        
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-    } catch (error) {
-        console.error('Download failed:', error);
-    }
-};
+        if (!projectUrl) return;
+
+        try {
+            const response = await fetch(projectUrl);
+            const blob = await response.blob();
+
+            const url = window.URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `video-${projectIdRef.current || 'export'}.mp4`;
+            document.body.appendChild(a);
+            a.click();
+
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Download failed:', error);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-black p-6">
+            <div
+                className="cursor-pointer inline-flex items-center gap-2 text-sm text-gray-400 transition-colors hover:text-white"
+            >
+                {
+                    (progress === 100) ?
+                        <Link href='/dashboard'>
+                            <Button className="cursor-pointer"><ArrowLeft className="h-4 w-4" />Back to Dashboard</Button>
+                        </Link>
+                        :
+                        (progress > 0) ?
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button
+                                        disabled={isBackClicked}
+                                        className={`flex items-center gap-2 ${isBackClicked ? "cursor-wait opacity-70" : "cursor-pointer"}`}
+                                    >
+                                        <ArrowLeft className={`h-4 w-4 ${isBackClicked ? "animate-pulse" : ""}`} />
+                                        {isBackClicked ? "Please wait…" : "Back to Dashboard"}
+                                    </Button>
+
+                                </AlertDialogTrigger>
+                                {projectIdRef.current ? <Content id={projectIdRef.current} setIsBackClicked={setIsBackClicked} /> : null}
+                            </AlertDialog>
+                            :
+                            null
+                }
+            </div>
             <div className="mx-auto max-w-7xl space-y-6">
                 <div className="grid grid-cols-12 gap-6">
-                    {/* Scenes Section */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -146,7 +176,6 @@ export default function FinalVideo() {
                         </Card>
                     </motion.div>
 
-                    {/* Final Video Section */}
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -222,14 +251,13 @@ export default function FinalVideo() {
                                     </div>
                                 </div>
 
-                                {/* Video Player */}
                                 <div className="w-full rounded-xl overflow-hidden flex items-center justify-center p-4">
                                     {projectUrl ? (
                                         <BackgroundGradient className="rounded-xxl dark:bg-zinc-900">
                                             <motion.video
                                                 src={projectUrl}
                                                 controls
-                                                className="w-[360px] h-[640px] rounded-lg m-1"
+                                                className="w-90 h-160 rounded-lg m-1"
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
                                                 transition={{ duration: 0.3 }}
@@ -254,4 +282,69 @@ export default function FinalVideo() {
             </div>
         </div>
     );
+}
+
+function Content(
+    {
+        id,
+        setIsBackClicked
+    }:
+        {
+            id: string,
+            setIsBackClicked: (v: boolean) => void
+        }
+) {
+    const router = useRouter();
+
+    const handleDiscard = async () => {
+        setIsBackClicked(true)
+        try {
+            await cancelProject(id)
+            router.push(`/dashboard?discarded=${id}`)
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setIsBackClicked(false);
+        }
+    }
+
+    return (
+        <>
+            <AlertDialogContent className="max-w-md rounded-2xl bg-zinc-950 border border-zinc-800">
+                <AlertDialogHeader className="space-y-2">
+                    <AlertDialogTitle className="text-lg font-semibold text-white">
+                        Leave this project?
+                    </AlertDialogTitle>
+
+                    <AlertDialogDescription className="text-sm text-zinc-400 leading-relaxed">
+                        Your video is still being generated.
+                        <br />
+                        <br />
+                        You can continue working in the background and access the project later
+                        from your dashboard, or discard this project permanently.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+
+                <AlertDialogFooter className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                    <AlertDialogCancel className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 cursor-pointer">
+                        Cancel
+                    </AlertDialogCancel>
+
+                    <AlertDialogAction
+                        className="bg-red-600 hover:bg-red-700 text-white cursor-pointer"
+                        onClick={handleDiscard}
+                    >
+                        Discard Project
+                    </AlertDialogAction>
+
+                    <AlertDialogAction
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer"
+                        onClick={() => router.push('/dashboard ')}
+                    >
+                        Continue in Background
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </>
+    )
 }

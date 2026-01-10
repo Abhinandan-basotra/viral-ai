@@ -217,7 +217,6 @@ Your task is to break down the given script into a list of visually compelling s
             const mergeData = await mergeRes.json();
             projectProgress = Number(mergeData.sceneEndTime);
             await updateSceneStatus(scene.id, "Generated");
-            await updateProjectStatus(projectId, "Merging Scenes");
             const finalOutputRes = await uploadVideoToCloudinary(new Blob([fs.readFileSync(finalOutputPath)]), "final");
             await prisma.project.update({
                 where: {

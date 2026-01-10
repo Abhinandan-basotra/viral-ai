@@ -70,7 +70,7 @@ export default function GenerateScript({
     };
 
     return (
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-125">
             <DialogHeader>
                 <DialogTitle>Generate Script with AI</DialogTitle>
             </DialogHeader>
@@ -80,7 +80,7 @@ export default function GenerateScript({
                     value={idea}
                     onChange={(e) => setIdea(e.target.value)}
                     placeholder="Enter a prompt for your video script..."
-                    className="min-h-[180px] resize-none"
+                    className="min-h-45 resize-none"
                 />
 
                 <div className="flex flex-col gap-2">
@@ -111,10 +111,10 @@ export default function GenerateScript({
 
                 <div className="flex justify-end gap-2">
                     <DialogClose asChild>
-                        <Button variant="secondary">Cancel</Button>
+                        <Button variant="secondary" className="cursor-pointer">Cancel</Button>
                     </DialogClose>
 
-                    <Button onClick={handleGenerate} disabled={loading}>
+                    <Button onClick={handleGenerate} disabled={loading} className="cursor-pointer">
                         {loading ? (
                             <div className="flex items-center gap-2">
                                 Generating <Spinner />

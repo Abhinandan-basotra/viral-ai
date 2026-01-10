@@ -49,8 +49,8 @@ export async function GET(req: NextRequest, { params }: RouteParam) {
                 updatedAt: "asc"
             }
         })
-        if (!neededScenes) return NextResponse.json({ done: true , project: project.finalUrl, progress: project.progress, projectStatus: project.status})
-        return NextResponse.json({ messsage: 'Needed Scenes Fetched', neededScenes, success: true, progress: progress, project: project.finalUrl, done: true, projectStatus: project.status }, { status: 200 })
+        if (!neededScenes) return NextResponse.json({ project: project.finalUrl, progress: project.progress, projectStatus: project.status})
+        return NextResponse.json({ messsage: 'Needed Scenes Fetched', neededScenes, success: true, progress: progress, project: project.finalUrl, projectStatus: project.status }, { status: 200 })
     } catch (error) {
         console.log(error);
         return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });

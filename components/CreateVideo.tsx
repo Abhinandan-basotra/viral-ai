@@ -144,7 +144,9 @@ export default function CreateVideo() {
             console.log('Handle Generate: ', error);
             toast('Something went wrong');
         }
-        setIsGenerating(false)
+        finally{
+            setIsGenerating(false)
+        }
     }
 
     const playAudio = (item: Tune | Voices) => {
@@ -265,7 +267,7 @@ export default function CreateVideo() {
                                 value={script}
                                 onChange={(e) => setScript(e.target.value)}
                                 maxLength={1200}
-                                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 min-h-[150px] md:min-h-[200px] resize-none p-3 md:p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
+                                className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-500 min-h-37.5 md:min-h-50 resize-none p-3 md:p-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600"
                             />
 
                             <p className="absolute bottom-4 md:bottom-6 right-4 md:right-7 text-gray-500 text-xs md:text-sm">
@@ -296,7 +298,7 @@ export default function CreateVideo() {
 
                         <Card className="bg-gray-900 border-gray-800 p-4 md:p-6">
                             <Label className="text-white mb-3 md:mb-4 block font-semibold">Select Tone</Label>
-                            <div className={loading ? "flex justify-center items-center w-full min-h-[100px]" : "grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4"}>
+                            <div className={loading ? "flex justify-center items-center w-full min-h-25" : "grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4"}>
                                 {loading ? (
                                     <LoaderThree />
                                 ) : (
@@ -313,7 +315,7 @@ export default function CreateVideo() {
                                                     <span className="text-gray-400 text-xs md:text-sm line-clamp-2">{tone.description}</span>
                                                 </div>
                                                 <Button
-                                                    className="cursor-pointer bg-gray-800 hover:bg-gray-700 w-10 h-10 rounded-full flex-shrink-0"
+                                                    className="cursor-pointer bg-gray-800 hover:bg-gray-700 w-10 h-10 rounded-full shrink-0"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         playAudio(tone);
@@ -331,7 +333,7 @@ export default function CreateVideo() {
                         <Card className="bg-gray-900 border-gray-800 p-4 md:p-6">
                             <Label className="text-white mb-3 md:mb-4 block font-semibold">Select Voice</Label>
 
-                            <div className={!loading ? "grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-4" : "flex justify-center items-center w-full min-h-[100px]"}>
+                            <div className={!loading ? "grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-4" : "flex justify-center items-center w-full min-h-25"}>
                                 {loading ? (
                                     <LoaderThree />
                                 ) : (
@@ -361,7 +363,7 @@ export default function CreateVideo() {
                                                         </div>
 
                                                         <Button
-                                                            className={`cursor-pointer w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 flex-shrink-0
+                                                            className={`cursor-pointer w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 shrink-0
                                                                 ${isPlaying ? "bg-yellow-500 hover:bg-yellow-600" : "bg-gray-800 hover:bg-gray-700"}
                                                             `}
                                                             onClick={(e) => {
@@ -378,7 +380,7 @@ export default function CreateVideo() {
                                                     </div>
 
                                                     {isPlaying && (
-                                                        <div className="absolute bottom-0 left-0 h-[3px] w-full bg-yellow-500 animate-pulse rounded-b-xl"></div>
+                                                        <div className="absolute bottom-0 left-0 h-0.75 w-full bg-yellow-500 animate-pulse rounded-b-xl"></div>
                                                     )}
                                                 </Card>
                                             );
@@ -456,7 +458,7 @@ export default function CreateVideo() {
                 </div>
 
                 <div className="hidden lg:block">
-                    <Separator orientation="vertical" className="h-full bg-gray-700 w-[2px] mx-4 xl:mx-6" />
+                    <Separator orientation="vertical" className="h-full bg-gray-700 w-0.5 mx-4 xl:mx-6" />
                 </div>
 
                 <div className="w-full lg:w-2/5 xl:w-1/3 p-4 md:p-6 lg:p-10">

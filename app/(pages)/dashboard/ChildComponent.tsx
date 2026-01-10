@@ -18,10 +18,10 @@ export default function ChildComponent({ email, name }: {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const visited = localStorage.getItem("visited-dashboard-page");
+    const visited = sessionStorage.getItem("visited-dashboard-page");
     if (!visited) {
       setShow(true);
-      localStorage.setItem('visited-dashboard-page', 'true');
+      sessionStorage.setItem('visited-dashboard-page', 'true');
     }
     const timer = setTimeout(() => {
       setShow(false);
@@ -101,11 +101,16 @@ export function SidebarComponent({ name, email }: { name: string, email: string 
           },
         });
         const data = await res.json();
+        const params = new URLSearchParams(window.location.search);
+        const discardedId = params.get("discarded");
         const sortedProjects = [...data.projects].sort(
           (a, b) =>
             new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
         );
-        setProjects(sortedProjects)
+        const filteredProjects = discardedId
+          ? sortedProjects.filter(p => p.id !== discardedId)
+          : sortedProjects;
+        setProjects(filteredProjects)
       } catch (error) {
         console.error(error);
       } finally {
@@ -127,9 +132,14 @@ export function SidebarComponent({ name, email }: { name: string, email: string 
 
 
   const handleDeleteVideo = async (projectId: string) => {
-    await deleteVideo(projectId, '');
-    setProjects(prev => prev?.filter(p => p.id != projectId));
-    setIsTrashClicked(false)
+    try {
+      await deleteVideo(projectId, '');
+      setProjects(prev => prev?.filter(p => p.id != projectId));
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsTrashClicked(false)
+    }
   }
 
   return (
@@ -174,8 +184,8 @@ export function SidebarComponent({ name, email }: { name: string, email: string 
                             </a>
                             <span
                               className={`text-xs text-zinc-400 transition-all duration-200 ease-out ${hoveredProjectId === project.id
-                                  ? 'opacity-100 max-h-4'
-                                  : 'opacity-0 max-h-0'
+                                ? 'opacity-100 max-h-4'
+                                : 'opacity-0 max-h-0'
                                 }`}
                             >
                               {formatDate(project.updatedAt)}
