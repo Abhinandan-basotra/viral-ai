@@ -41,36 +41,44 @@ export default function FinalVideo() {
 
         const interval = setInterval(async () => {
             if (isPollingDone.current) return;
-            const id = lastIdRef.current;
 
+            const id = lastIdRef.current;
             const res = await fetch(
                 `${BASE_URL}/api/v1/video/${projectIdRef.current}/${id || "none"}`
             );
             const data = await res.json();
 
-            const incomingScenes = data?.neededScenes ?? data?.allScenes ?? [];
-            setProgress(data.progress);
-            console.log(data);
-            console.log(data.projectStatus);
+            if (!data) return;
 
-            if (data.projectStatus === 'Generated' || !data || data.projectStatus === 'Cancelled') {
-                clearInterval(interval);
-                isPollingDone.current = true;
-                return;
+            setProgress(data.progress ?? 0);
+
+            if (data.project) {
+                setProjectUrl(data.project);
             }
 
-            setProjectUrl(data.project);
+            const incomingScenes = data?.neededScenes ?? data?.allScenes ?? [];
+
             if (incomingScenes.length > 0) {
                 setScenes((prev) => {
                     const newOnes = incomingScenes.filter(
-                        (incoming: any) => !prev.some((p) => p.id === incoming.id)
+                        (incoming: any) => !prev.some((p) => p.id === incoming.id && p.updatedAt === incoming.updatedAt)
                     );
                     return [...prev, ...newOnes];
                 });
 
-                lastIdRef.current = incomingScenes[incomingScenes.length - 1].id;
+                lastIdRef.current =
+                    incomingScenes[incomingScenes.length - 1]?.id;
+            }
+
+            if (
+                data.projectStatus === "Generated" ||
+                data.projectStatus === "Cancelled"
+            ) {
+                isPollingDone.current = true;
+                clearInterval(interval);
             }
         }, 10000);
+
 
         return () => clearInterval(interval);
     }, []);
