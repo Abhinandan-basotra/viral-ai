@@ -72,7 +72,7 @@ const GENRES = [
 
 export default function CreateVideo() {
     const [selectedGenres, setSelectedGenres] = useState<string[]>([])
-    const [selectedTones, setSelectedTones] = useState<string[]>([])
+    const [selectedTune, setSelectedTune] = useState<Number | null>(-1)
     const [selectedVoiceId, setSelectedVoiceId] = useState<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false)
     const [openScriptPage, setOpenScriptPage] = useState(false);
@@ -92,8 +92,8 @@ export default function CreateVideo() {
         setSelectedGenres((prev) => (prev.includes(genre) ? prev.filter((g) => g !== genre) : [genre]))
     }
 
-    const toggleTone = (tone: string) => {
-        setSelectedTones((prev) => (prev.includes(tone) ? prev.filter((t) => t !== tone) : [tone]))
+    const toggleTone = (tone: Number) => {
+        setSelectedTune((prev) => (prev === tone? null : tone))
     }
 
     const aspectRatios = [
@@ -137,7 +137,8 @@ export default function CreateVideo() {
                     type: 'image',
                     generationPreset: selectedGenres[0],
                     aspectRatio: aspectRatio,
-                    voiceId: selectedVoiceId
+                    voiceId: selectedVoiceId,
+                    tuneId: selectedTune
                 })
             })
         } catch (error) {
@@ -306,8 +307,8 @@ export default function CreateVideo() {
                                         {tunes.map((tone: Tune) => (
                                             <Card
                                                 key={tone.id}
-                                                onClick={() => toggleTone(tone.name)}
-                                                className={`cursor-pointer flex flex-row justify-between p-3 md:p-4 h-auto md:h-20 rounded-xl border border-gray-700 transition-all duration-300 ${selectedTones.includes(tone.name) ? "ring-2 ring-yellow-500 scale-105 bg-gray-800" : "hover:bg-gray-800"
+                                                onClick={() => toggleTone(tone.id)}
+                                                className={`cursor-pointer flex flex-row justify-between p-3 md:p-4 h-auto md:h-20 rounded-xl border border-gray-700 transition-all duration-300 ${selectedTune === tone.id ? "ring-2 ring-yellow-500 scale-105 bg-gray-800" : "hover:bg-gray-800"
                                                     }`}
                                             >
                                                 <div className="flex flex-col justify-center flex-1 min-w-0 pr-2">

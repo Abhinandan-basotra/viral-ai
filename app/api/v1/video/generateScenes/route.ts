@@ -5,6 +5,7 @@ import { updateSceneStatus } from "@/app/lib/updateSceneStatus";
 import { uploadVideoToCloudinary } from "@/app/lib/cloudinary/uploadVideoToCloudinary";
 import { isCancelled } from "./isCancelled";
 import { deleteVideo } from "@/app/(pages)/finalVideo/DeleteVideoPermanently";
+import { findTitle } from "./findTitle";
 
 export async function updateProjectStatus(projectId: string, status: string) {
     await prisma.project.update({
@@ -39,6 +40,8 @@ export async function POST(req: NextRequest) {
         if (!project) return NextResponse.json({ message: "Project not found", success: false }, { status: 404 })
         const script = project.script;
         const expectedLength = project.expectedLength;
+
+        const title = await findTitle(script);
 
         const basePrompt = `You are a professional scene designer for short-form videos (e.g., YouTube Shorts, Reels, TikToks).  
 Your task is to break down the given script into a list of visually compelling scenes, based on the provided inputs.
@@ -224,7 +227,9 @@ Your task is to break down the given script into a list of visually compelling s
                 },
                 data: {
                     finalUrl: finalOutputRes,
-                    progress: ((i+1)*100)/totalScenes
+                    progress: ((i+1)*100)/totalScenes,
+                    title: title,
+                    tuneId: tuneId
                 }
             })
         }

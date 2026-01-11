@@ -11,12 +11,15 @@ import { BackgroundGradient } from "@/components/ui/background-gradient";
 import { Progress } from "@/components/ui/progress";
 import ShinyText from "@/components/ui/ShinyText"
 import GradientText from "@/components/ui/GradientText"
-import { ArrowLeft, Download } from "lucide-react";
+import { ArrowLeft, AudioLines, Download, Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { cancelProject } from "./DeleteVideoPermanently";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { addTune } from "./addTune";
+import { toast } from "react-toastify";
 
 
 export default function FinalVideo() {
@@ -27,6 +30,8 @@ export default function FinalVideo() {
     const isPollingDone = useRef(false);
     const projectIdRef = useRef<string | null>(null);
     const [isBackClicked, setIsBackClicked] = useState(false);
+    const [isAddingTune, setIsAddingTune] = useState(false);
+    const [hasTune, setHasTune] = useState(false);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -104,6 +109,24 @@ export default function FinalVideo() {
             console.error('Download failed:', error);
         }
     };
+
+    const handleAddTune = async () => {
+        setIsAddingTune(true);
+        try {
+            if (!projectIdRef.current) return;
+            const res = await addTune(projectIdRef.current);
+            const finalUrl = res?.finalUrl;
+            const message = res?.message;
+            toast(message);
+            if (!finalUrl) return;
+            setProjectUrl(finalUrl);
+            setHasTune(true);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setIsAddingTune(false);
+        }
+    }
 
     return (
         <div className="min-h-screen bg-black p-6">
@@ -198,13 +221,48 @@ export default function FinalVideo() {
                                     </CardTitle>
                                     {
                                         progress === 100 &&
-                                        <div>
-                                            <button
-                                                className="cursor-pointer bg-[#F7BF00] hover:bg-[#e6b200]"
-                                                onClick={handleDownload}
-                                            >
-                                                <Download />
-                                            </button>
+                                        <div className="flex items-center gap-2">
+                                            {
+                                                !hasTune &&
+                                                <div>
+                                                    <HoverCard>
+                                                        <HoverCardTrigger asChild>
+                                                            <button
+                                                                className="cursor-pointer bg-[#F7BF00] hover:bg-[#e6b200]"
+                                                                onClick={handleAddTune}
+                                                            >
+                                                                {
+                                                                    isAddingTune ?
+                                                                        <Loader className="w-4 h-4 animate-spin" />
+                                                                        :
+                                                                        <AudioLines />
+                                                                }
+                                                            </button>
+                                                        </HoverCardTrigger>
+                                                        {
+                                                            isAddingTune ?
+                                                                null
+                                                                :
+                                                                <HoverCardContent className={`${isAddingTune ? "" : "w-60"}`}>
+                                                                    <div className="space-y-1">
+                                                                        <h4 className="text-sm font-semibold">Add Tune</h4>
+                                                                        <p className="text-sm">
+                                                                            Add the selected tune to your project with one click.
+                                                                        </p>
+                                                                    </div>
+                                                                </HoverCardContent>
+                                                        }
+                                                    </HoverCard>
+                                                </div>
+                                            }
+                                            <div>
+                                                <button
+                                                    className="cursor-pointer bg-[#F7BF00] hover:bg-[#e6b200]"
+                                                    onClick={handleDownload}
+                                                >
+                                                    <Download />
+                                                </button>
+                                            </div>
                                         </div>
                                     }
 

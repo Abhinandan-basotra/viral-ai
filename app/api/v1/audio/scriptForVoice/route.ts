@@ -14,40 +14,65 @@ export async function POST(req: NextRequest) {
             combined_script += `Scene${scene.sceneNumber}: ${scene.description}\n`
         }
 
-        let basePrompt = `You are a professional voice-over scriptwriter and you strictly use ElevenLabs v3 audio tags (as per ElevenLabs’ official list).  
-I will give you a scene-by-scene outline of a story.  
-Your job is to generate a **voice-over narration script** ready for Eleven v3, incorporating:
+let basePrompt = `You are a professional voice-over scriptwriter for ElevenLabs v3 TTS.
 
-- **Only valid audio tags** from the official Eleven v3 list (e.g. [whispers], [shouts], [sad], [laughs], [pause], [dramatic tone], [rushed], [drawn out], [clears throat], [French accent], etc.).  
-- **Ellipses**, **punctuation**, capitalization to manage rhythm, breaths, emphasis.  
-- **Scene divisions** (Scene 1, Scene 2, etc.), with an **approximate duration** per scene in seconds.  
-- **Do not alter the narrative meaning** — only enhance for voice-over.  
-- At the end, add a **voice tone / delivery style** suggestion (e.g. “female, calm but emotionally expressive” or “male, dramatic and slow pacing”).
+TASK:
+Generate a voice-over narration script from the scene outline below, optimized for natural speech pacing.
 
-Here is the outline:  
-script: 
-${combined_script}
-expected-time: ${project?.expectedLength}
-overall-idea: ${project?.script}
-Return only JSON in the following format exactly:
+INPUT:
+- Scene outline: ${combined_script}
+- Target duration: ${project?.expectedLength} seconds
+- Story concept: ${project?.script}
+
+REQUIREMENTS:
+
+1. **Pacing & Rhythm**:
+   - Write for NATURAL speaking speed (aim for ~150-180 words per minute)
+   - Use audio tags SPARINGLY (max 2-3 per scene)
+   - Avoid ellipses unless necessary for dramatic effect
+   - Use commas for natural breathing, periods for clear stops
+
+2. **ElevenLabs v3 Audio Tags** (use only when essential):
+   - Emotion: [sad], [happy], [angry], [fearful], [curious]
+   - Delivery: [whispers], [shouts], [dramatic tone], [calm]
+   - Timing: [pause] (use rarely), [rushed], [drawn out]
+   - Effects: [laughs], [sighs], [clears throat]
+   - Accents: [French accent], [British accent], etc.
+
+3. **Scene Structure**:
+   - Label each scene (Scene 1, Scene 2...)
+   - Estimate duration per scene (in seconds)
+   - Balance script length with target duration
+
+4. **Voice Style**:
+   - Suggest gender, tone, and delivery style
+   - Include optimal stability (0.4-0.8, default 0.5) and similarity_boost (0.5-1.0, default 0.75)
+
+OUTPUT FORMAT (JSON only, no markdown):
 {
   "voice_over_script": [
     {
       "scene": "Scene 1",
-      "duration_sec": 5,
-      "narration": "[curious] It begins with a glow... [pause] a spark of silicon thought."
+      "duration_sec": 8,
+      "narration": "In the beginning, there was silence. Then came the hum of machines, breathing life into cold steel."
     },
     {
       "scene": "Scene 2",
-      "duration_sec": 4,
-      "narration": "[calm] In sterile silence, steel hands perform miracles."
+      "duration_sec": 6,
+      "narration": "[whispers] Something stirs in the darkness. A consciousness, awakening."
     }
   ],
-  "voice_style": "male, deep, cinematic and reflective",
-  "stability": 0.65,
-  "similarity_boost": 0.8
-};
-`
+  "voice_style": "male, deep and cinematic, moderate pacing with subtle emotion",
+  "stability": 0.5,
+  "similarity_boost": 0.75
+}
+
+IMPORTANT:
+- Prioritize natural flow over dramatic tags
+- Keep sentences concise and clear
+- Match total script length to expected duration
+- Write conversationally, not like written prose
+`;
         const res = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${process.env.GEMINI_API_2}`,
             {
