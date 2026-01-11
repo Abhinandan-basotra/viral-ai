@@ -68,8 +68,9 @@ function mixTuneWithAudio(
       .input(voicePath)
       .input(tunePath)
       .complexFilter([
-        `[1:a]aloop=loop=-1:size=2e+09,volume=0.2[a1];` +
-        `[0:a][a1]amix=inputs=2:duration=first[a]`
+        `[0:a]volume=1.4[a0];` +
+        `[1:a]aloop=loop=-1:size=2e+09,volume=0.15[a1];` +
+        `[a0][a1]amix=inputs=2:duration=first[a]`
       ])
       .outputOptions([
         "-map [a]",
@@ -110,11 +111,13 @@ export async function addTune(projectId: string) {
       where: { id: projectId }
     });
 
+    if(project?.hasTune) return {message: "Tune already added", success: false}
+
     const tuneId = project?.tuneId;
     const projectUrl = project?.finalUrl;
 
     if (!tuneId || !projectUrl) {
-      return { message: "Tune not found" };
+      return { message: "Tune not found", success: false};
     }
 
     const tune = await prisma.tunes.findFirst({
@@ -123,7 +126,7 @@ export async function addTune(projectId: string) {
     });
 
     if (!tune) {
-      return { message: "Tune not found" };
+      return { message: "Tune not found", success: false};
     }
 
     paths.projectPath = `project-${Date.now()}.mp4`;
@@ -151,10 +154,13 @@ export async function addTune(projectId: string) {
 
     await prisma.project.update({
       where: { id: projectId },
-      data: { finalUrl }
+      data: { 
+        finalUrl: finalUrl,
+        hasTune: true
+       }
     });
 
-    return { message: "Tune added Successfully", finalUrl: finalUrl};
+    return { message: "Tune added Successfully", finalUrl: finalUrl, success: true};
 
   } catch (error) {
     console.error(error);

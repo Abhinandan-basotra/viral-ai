@@ -31,7 +31,6 @@ export default function FinalVideo() {
     const projectIdRef = useRef<string | null>(null);
     const [isBackClicked, setIsBackClicked] = useState(false);
     const [isAddingTune, setIsAddingTune] = useState(false);
-    const [hasTune, setHasTune] = useState(false);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -61,18 +60,21 @@ export default function FinalVideo() {
                 setProjectUrl(data.project);
             }
 
-            const incomingScenes = data?.neededScenes ?? data?.allScenes ?? [];
+            const incomingScenes =
+                (data?.neededScenes ?? data?.allScenes ?? [])
+                    .filter((scene: any) => scene.status === "Generated");
+
 
             if (incomingScenes.length > 0) {
                 setScenes((prev) => {
-                    const newOnes = incomingScenes.filter(
-                        (incoming: any) => !prev.some((p) => p.id === incoming.id && p.updatedAt === incoming.updatedAt)
-                    );
-                    return [...prev, ...newOnes];
-                });
+                    const prevMap = new Map(prev.map(scene => [scene.id, scene]));
 
-                lastIdRef.current =
-                    incomingScenes[incomingScenes.length - 1]?.id;
+                    for (const scene of incomingScenes) {
+                        prevMap.set(scene.id, scene); 
+                    }
+                    return Array.from(prevMap.values());
+                });
+                lastIdRef.current = incomingScenes[incomingScenes.length - 1]?.id;
             }
 
             if (
@@ -82,7 +84,7 @@ export default function FinalVideo() {
                 isPollingDone.current = true;
                 clearInterval(interval);
             }
-        }, 10000);
+        }, 30000);
 
 
         return () => clearInterval(interval);
@@ -117,10 +119,13 @@ export default function FinalVideo() {
             const res = await addTune(projectIdRef.current);
             const finalUrl = res?.finalUrl;
             const message = res?.message;
-            toast(message);
+            if (res.success) {
+                toast(message);
+            } else {
+                toast.info(message)
+            }
             if (!finalUrl) return;
             setProjectUrl(finalUrl);
-            setHasTune(true);
         } catch (error) {
             console.log(error);
         } finally {
@@ -222,39 +227,36 @@ export default function FinalVideo() {
                                     {
                                         progress === 100 &&
                                         <div className="flex items-center gap-2">
-                                            {
-                                                !hasTune &&
-                                                <div>
-                                                    <HoverCard>
-                                                        <HoverCardTrigger asChild>
-                                                            <button
-                                                                className="cursor-pointer bg-[#F7BF00] hover:bg-[#e6b200]"
-                                                                onClick={handleAddTune}
-                                                            >
-                                                                {
-                                                                    isAddingTune ?
-                                                                        <Loader className="w-4 h-4 animate-spin" />
-                                                                        :
-                                                                        <AudioLines />
-                                                                }
-                                                            </button>
-                                                        </HoverCardTrigger>
-                                                        {
-                                                            isAddingTune ?
-                                                                null
-                                                                :
-                                                                <HoverCardContent className={`${isAddingTune ? "" : "w-60"}`}>
-                                                                    <div className="space-y-1">
-                                                                        <h4 className="text-sm font-semibold">Add Tune</h4>
-                                                                        <p className="text-sm">
-                                                                            Add the selected tune to your project with one click.
-                                                                        </p>
-                                                                    </div>
-                                                                </HoverCardContent>
-                                                        }
-                                                    </HoverCard>
-                                                </div>
-                                            }
+                                            <div>
+                                                <HoverCard>
+                                                    <HoverCardTrigger asChild>
+                                                        <button
+                                                            className="cursor-pointer bg-[#F7BF00] hover:bg-[#e6b200]"
+                                                            onClick={handleAddTune}
+                                                        >
+                                                            {
+                                                                isAddingTune ?
+                                                                    <Loader className="w-4 h-4 animate-spin" />
+                                                                    :
+                                                                    <AudioLines />
+                                                            }
+                                                        </button>
+                                                    </HoverCardTrigger>
+                                                    {
+                                                        isAddingTune ?
+                                                            null
+                                                            :
+                                                            <HoverCardContent className={`${isAddingTune ? "" : "w-60"}`}>
+                                                                <div className="space-y-1">
+                                                                    <h4 className="text-sm font-semibold">Add Tune</h4>
+                                                                    <p className="text-sm">
+                                                                        Add the selected tune to your project with one click.
+                                                                    </p>
+                                                                </div>
+                                                            </HoverCardContent>
+                                                    }
+                                                </HoverCard>
+                                            </div>
                                             <div>
                                                 <button
                                                     className="cursor-pointer bg-[#F7BF00] hover:bg-[#e6b200]"
@@ -309,7 +311,7 @@ export default function FinalVideo() {
                                         <span>
                                             {
                                                 progress < 100 ?
-                                                    `Generating frame ${scenes.reduce((GeneratingSceneNum, scene) => scene.finalUrl ? GeneratingSceneNum + 1 : GeneratingSceneNum, 0)}`
+                                                    `Generating frame ${scenes.reduce((count, scene) => scene.status === 'Generated' ? count + 1 : count, 0) + 1}`
                                                     :
                                                     "Final Video"
                                             }
