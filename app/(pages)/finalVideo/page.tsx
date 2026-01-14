@@ -11,7 +11,7 @@ import { BackgroundGradient } from "@/components/ui/background-gradient";
 import { Progress } from "@/components/ui/progress";
 import ShinyText from "@/components/ui/ShinyText"
 import GradientText from "@/components/ui/GradientText"
-import { ArrowLeft, AudioLines, Download, Loader } from "lucide-react";
+import { ArrowLeft, AudioLines, Captions, Download, Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import { cancelProject } from "./DeleteVideoPermanently";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { addTune } from "./addTune";
 import { toast } from "react-toastify";
+import { addCaption } from "@/app/actions/addCaption";
 
 
 export default function FinalVideo() {
@@ -31,6 +32,7 @@ export default function FinalVideo() {
     const projectIdRef = useRef<string | null>(null);
     const [isBackClicked, setIsBackClicked] = useState(false);
     const [isAddingTune, setIsAddingTune] = useState(false);
+    const [isAddingCaptions, setIsAddingCaptions] = useState(false)
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -130,6 +132,26 @@ export default function FinalVideo() {
             console.log(error);
         } finally {
             setIsAddingTune(false);
+        }
+    }
+
+    const handleAddCaption = async () => {
+        setIsAddingCaptions(true);
+        try {
+            if(!projectIdRef.current) return;
+            const res = await addCaption(projectUrl, projectIdRef.current);
+            const finalUrl = res.finalUrl;
+            if(res.success){
+                toast.success(res.message);
+            }else{
+                toast.info(res.message);
+            }
+            if(!finalUrl) return;
+            setProjectUrl(finalUrl);
+        } catch (error) {
+            console.log(error);
+        }finally{
+            setIsAddingCaptions(false);
         }
     }
 
@@ -251,6 +273,36 @@ export default function FinalVideo() {
                                                                     <h4 className="text-sm font-semibold">Add Tune</h4>
                                                                     <p className="text-sm">
                                                                         Add the selected tune to your project with one click.
+                                                                    </p>
+                                                                </div>
+                                                            </HoverCardContent>
+                                                    }
+                                                </HoverCard>
+                                            </div>
+                                            <div>
+                                                <HoverCard>
+                                                    <HoverCardTrigger asChild>
+                                                        <button
+                                                            className="cursor-pointer bg-[#F7BF00] hover:bg-[#e6b200]"
+                                                            onClick={handleAddCaption}
+                                                        >
+                                                            {
+                                                                isAddingCaptions ?
+                                                                    <Loader className="w-4 h-4 animate-spin" />
+                                                                    :
+                                                                    <Captions />
+                                                            }
+                                                        </button>
+                                                    </HoverCardTrigger>
+                                                    {
+                                                        isAddingCaptions ?
+                                                            null
+                                                            :
+                                                            <HoverCardContent className={`${isAddingCaptions ? "" : "w-60"}`}>
+                                                                <div className="space-y-1">
+                                                                    <h4 className="text-sm font-semibold">Add Caption</h4>
+                                                                    <p className="text-sm">
+                                                                        Add the subtitle/caption to your project with one click.
                                                                     </p>
                                                                 </div>
                                                             </HoverCardContent>

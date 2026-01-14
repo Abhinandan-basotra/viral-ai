@@ -117,14 +117,13 @@ export default function CreateVideo() {
 
     const handleGenerate = async () => {
         setIsGenerating(true)
+        if(isGenerating) return;
         try {
             const user = await getUser();
             const userId = user?.user.id;
 
 
             const projectId = await addProjectScript(script, title, Number(userId));
-
-            router.push(`/finalVideo?projectId=${projectId}`);
 
             fetch(`${BASE_URL}/api/v1/video/generateScenes`, {
                 method: 'POST',
@@ -141,11 +140,11 @@ export default function CreateVideo() {
                     tuneId: selectedTune
                 })
             })
+
+            router.push(`/finalVideo?projectId=${projectId}`);
         } catch (error) {
             console.log('Handle Generate: ', error);
             toast('Something went wrong');
-        }
-        finally{
             setIsGenerating(false)
         }
     }

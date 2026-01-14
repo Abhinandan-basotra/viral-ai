@@ -23,22 +23,24 @@ model User {
 }
 
 model Project {
-  id          String    @id @default(cuid())
-  user        User      @relation(fields: [userId], references: [id])
-  userId      Int
-  title       String
-  description String?
-  script      String
-  progress    Int       @default(0)
-  scenes      Scene[]
-  audio       Audio[]
-  assets      Asset[]
-  tuneId      Int?
-  finalUrl    String?
-  status      String    @default("Generating")
+  id             String   @id @default(cuid())
+  userId         Int
+  title          String
+  description    String?
+  script         String
+  status         String   @default("Generating")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
   expectedLength Int?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  finalUrl       String?
+  progress       Int      @default(0)
+  tuneId         Int?
+  hasTune        Boolean  @default(false)
+  hasCaption     Boolean  @default(false)
+  assets         Asset[]
+  audio          Audio[]
+  user           User     @relation(fields: [userId], references: [id])
+  scenes         Scene[]
 }
 
 model Scene {

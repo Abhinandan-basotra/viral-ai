@@ -19,7 +19,7 @@ const paths = {
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 ffmpeg.setFfprobePath(ffprobeInstaller.path);
 
-function safeUnlinkSync(filePath?: string) {
+export async function safeUnlinkSync(filePath?: string) {
   if (!filePath) return;
   try {
     if (fs.existsSync(filePath)) {
