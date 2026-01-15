@@ -1,7 +1,8 @@
 // app/api/auth/[...nextauth]/route.ts
-import NextAuth, { DefaultSession, DefaultUser, NextAuthOptions, type Session } from "next-auth";
+import NextAuth, { Account, DefaultSession, DefaultUser, NextAuthOptions, Profile, type Session } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google"
 import prisma from "@/app/lib/db";
 import bcrypt from "bcrypt";
 
@@ -49,6 +50,10 @@ export const authOptions: NextAuthOptions = {
           email: user.email
         };
       }
+    }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID || '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || ''
     })
   ],
   secret: process.env.NEXTAUTH_SECRET,
@@ -64,9 +69,31 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id;
       }
       return session;
-    }
+    },
+    async signIn({ account, profile }) {
+      if (account?.provider === "google") {
+        if (!profile?.email) return false;
 
+        if (!profile.email.endsWith("@gmail.com")) {
+          return false;
+        }
+
+        await prisma.user.upsert({
+          where: { email: profile.email },
+          update: {},
+          create: {
+            email: profile.email,
+            username: profile.name ?? profile.email.split("@")[0],
+            password: "", 
+          }
+        });
+      }
+      return true;
+    }
   },
+  pages:{
+    signIn: '/login',
+  }
 };
 
 export const handler = NextAuth(authOptions)
