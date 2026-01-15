@@ -21,21 +21,19 @@ async function clubCaptionsAndVideo(
     videoPath: string,
     subtitleFilePath: string
 ): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const outputPath = "final_with_captions.mp4";
+    const outputPath = `final_${Date.now()}.mp4`;
 
+    return new Promise((resolve, reject) => {
         ffmpeg(videoPath)
+            .videoFilter(`ass=${subtitleFilePath}`)
             .outputOptions([
-                "-vf",
-                `subtitles=${subtitleFilePath}:force_style='Fontsize=18,Alignment=2'`,
                 "-c:v libx264",
                 "-preset fast",
+                "-crf 23",
                 "-c:a copy"
             ])
             .output(outputPath)
-            .on("start", cmd => {
-                console.log("FFmpeg command:", cmd);
-            })
+            .on("start", cmd => console.log("FFmpeg:", cmd))
             .on("end", () => resolve(outputPath))
             .on("error", reject)
             .run();
@@ -44,23 +42,28 @@ async function clubCaptionsAndVideo(
 
 
 
+
 export async function addCaption(videoUrl: string, projectId: string) {
+    let videoPath = "";
+    let subtitlePath = "";
+    let finalOutput = "";
+
     try {
-        const project = await prisma.project.findFirst({
-            where: {
-                id: projectId
-            },
-            select: {
-                hasCaption: true
-            }
-        })
-        if(project?.hasCaption) return {message: "Already added", success: false};
-        paths.videoPath = `video_temp.mp4`;
-        await downloadFile(videoUrl, paths.videoPath);
+        const project = await prisma.project.findUnique({
+            where: { id: projectId },
+            select: { hasCaption: true }
+        });
 
-        const subtitleFilePath = await convert_speech_to_text(paths.videoPath);
+        if (project?.hasCaption) {
+            return { success: false, message: "Already added" };
+        }
 
-        const finalOutput = await clubCaptionsAndVideo(paths.videoPath, subtitleFilePath);
+        videoPath = `video_${Date.now()}.mp4`;
+        await downloadFile(videoUrl, videoPath);
+
+        subtitlePath = await convert_speech_to_text(videoPath);
+
+        finalOutput = await clubCaptionsAndVideo(videoPath, subtitlePath);
 
         const finalUrl = await uploadVideoToCloudinary(
             new Blob([fs.readFileSync(finalOutput)]),
@@ -68,21 +71,24 @@ export async function addCaption(videoUrl: string, projectId: string) {
         );
 
         await prisma.project.update({
-            where: {
-                id: projectId
-            },
+            where: { id: projectId },
             data: {
-                finalUrl: finalUrl,
+                finalUrl,
                 hasCaption: true
             }
-        })
-        return { message: "Caption added", success: true, finalUrl: finalUrl };
-    } catch (error) {
-        console.log(error);
-        return {message: "Unable to add Caption, try again", success: false}
+        });
+
+        return {
+            success: true,
+            message: "Caption added",
+            finalUrl
+        };
+    } catch (err) {
+        console.error(err);
+        return { success: false, message: "Unable to add captions" };
     } finally {
-        safeUnlinkSync(paths.finalOutput);
-        safeUnlinkSync(paths.subtitleFilePath);
-        safeUnlinkSync(paths.videoPath);
+        safeUnlinkSync(videoPath);
+        safeUnlinkSync(subtitlePath);
+        safeUnlinkSync(finalOutput);
     }
 }

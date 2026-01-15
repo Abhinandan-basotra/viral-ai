@@ -74,7 +74,7 @@ export default function ChildComponent({ email, name }: {
 interface Project {
   status: string;
   id: string;
-  userId: number;
+  userId: string;
   title: string;
   description: string | null;
   script: string;

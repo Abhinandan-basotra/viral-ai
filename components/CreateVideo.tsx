@@ -123,7 +123,7 @@ export default function CreateVideo() {
             const userId = user?.user.id;
 
 
-            const projectId = await addProjectScript(script, title, Number(userId));
+            const projectId = await addProjectScript(script, title, userId || '');
 
             fetch(`${BASE_URL}/api/v1/video/generateScenes`, {
                 method: 'POST',

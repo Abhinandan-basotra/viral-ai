@@ -11,7 +11,7 @@ export async function GET(req: NextRequest){
         if(!session || !session.user.id) return NextResponse.json({message: "User Not authenticated", success: false}, {status: 404});
         const projects = await prisma.project.findMany({
             where:{
-                userId: Number(session.user.id)
+                userId: session.user.id
             }
         })
         

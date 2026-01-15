@@ -1,7 +1,7 @@
 'use server';
 import prisma from "@/app/lib/db";
 
-export default async function addProjectScript(script: string, title: string | null, userId: number){
+export default async function addProjectScript(script: string, title: string | null, userId: string){
     
     const project = await prisma.project.create({
         data: {
