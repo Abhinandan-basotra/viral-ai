@@ -4,7 +4,7 @@ import fs from "fs";
 import { updateSceneStatus } from "@/app/lib/updateSceneStatus";
 import { uploadVideoToCloudinary } from "@/app/lib/cloudinary/uploadVideoToCloudinary";
 import { isCancelled } from "./isCancelled";
-import { deleteVideo } from "@/app/(pages)/finalVideo/DeleteVideoPermanently";
+import { deleteVideo } from "@/app/actions/DeleteVideoPermanently";
 import { findTitle } from "./findTitle";
 
 export async function updateProjectStatus(projectId: string, status: string) {

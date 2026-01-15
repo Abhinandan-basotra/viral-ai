@@ -75,7 +75,7 @@ export default function GenerateScript({
                 <DialogTitle>Generate Script with AI</DialogTitle>
             </DialogHeader>
 
-            <Card className="border-none shadow-none flex flex-col gap-5 bg-black">
+            <Card className="border-none shadow-none flex flex-col gap-5 bg-[#0b0a0a]">
                 <Textarea
                     value={idea}
                     onChange={(e) => setIdea(e.target.value)}

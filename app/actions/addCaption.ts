@@ -6,7 +6,7 @@ import ffmpegInstaller from "@ffmpeg-installer/ffmpeg"
 import prisma from "../lib/db";
 import { uploadVideoToCloudinary } from "../lib/cloudinary/uploadVideoToCloudinary";
 import fs from 'fs';
-import { safeUnlinkSync } from "../(pages)/finalVideo/addTune";
+import { safeUnlinkSync } from "./addTune";
 
 
 const paths = {
@@ -46,7 +46,7 @@ async function clubCaptionsAndVideo(
 
 export async function addCaption(videoUrl: string, projectId: string) {
     try {
-        const hasCaption = await prisma.project.findFirst({
+        const project = await prisma.project.findFirst({
             where: {
                 id: projectId
             },
@@ -54,7 +54,7 @@ export async function addCaption(videoUrl: string, projectId: string) {
                 hasCaption: true
             }
         })
-        if(hasCaption) return {message: "Already added", success: false};
+        if(project?.hasCaption) return {message: "Already added", success: false};
         paths.videoPath = `video_temp.mp4`;
         await downloadFile(videoUrl, paths.videoPath);
 

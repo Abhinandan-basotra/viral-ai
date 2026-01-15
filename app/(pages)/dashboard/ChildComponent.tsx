@@ -9,7 +9,7 @@ import { ChevronUp, Loader, Trash, User2, Video } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { deleteVideo } from "../finalVideo/DeleteVideoPermanently";
+import { deleteVideo } from "../../actions/DeleteVideoPermanently";
 
 export default function ChildComponent({ email, name }: {
   email: string,

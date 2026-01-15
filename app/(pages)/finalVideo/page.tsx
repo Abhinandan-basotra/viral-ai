@@ -16,9 +16,9 @@ import { useRouter } from "next/navigation";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { cancelProject } from "./DeleteVideoPermanently";
+import { cancelProject } from "../../actions/DeleteVideoPermanently";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { addTune } from "./addTune";
+import { addTune } from "../../actions/addTune";
 import { toast } from "react-toastify";
 import { addCaption } from "@/app/actions/addCaption";
 
@@ -72,7 +72,7 @@ export default function FinalVideo() {
                     const prevMap = new Map(prev.map(scene => [scene.id, scene]));
 
                     for (const scene of incomingScenes) {
-                        prevMap.set(scene.id, scene); 
+                        prevMap.set(scene.id, scene);
                     }
                     return Array.from(prevMap.values());
                 });
@@ -138,19 +138,19 @@ export default function FinalVideo() {
     const handleAddCaption = async () => {
         setIsAddingCaptions(true);
         try {
-            if(!projectIdRef.current) return;
+            if (!projectIdRef.current) return;
             const res = await addCaption(projectUrl, projectIdRef.current);
             const finalUrl = res.finalUrl;
-            if(res.success){
+            if (res.success) {
                 toast.success(res.message);
-            }else{
+            } else {
                 toast.info(res.message);
             }
-            if(!finalUrl) return;
+            if (!finalUrl) return;
             setProjectUrl(finalUrl);
         } catch (error) {
             console.log(error);
-        }finally{
+        } finally {
             setIsAddingCaptions(false);
         }
     }
@@ -211,16 +211,25 @@ export default function FinalVideo() {
                                 >
                                     <div className="p-4 space-y-3 pr-3">
                                         {scenes.length > 0 ? (
-                                            scenes.map((scene) => (
-                                                <motion.div
-                                                    key={scene.id}
-                                                    initial={{ opacity: 0, scale: 0.95 }}
-                                                    animate={{ opacity: 1, scale: 1 }}
-                                                    transition={{ duration: 0.2 }}
-                                                >
-                                                    <Scene scene={scene} />
-                                                </motion.div>
-                                            ))
+                                            <>
+                                                {scenes.map((scene) => (
+                                                    <motion.div
+                                                        key={scene.id}
+                                                        initial={{ opacity: 0, scale: 0.95 }}
+                                                        animate={{ opacity: 1, scale: 1 }}
+                                                        transition={{ duration: 0.2 }}
+                                                    >
+                                                        <Scene scene={scene} />
+                                                    </motion.div>
+                                                ))}
+                                                {
+                                                    (scenes.length > 0 && progress < 100) &&
+                                                    <>
+                                                        <Separator className="my-3 bg-gray-700" />
+                                                        <Skeleton className="h-28 w-full rounded-xl mt-1.5" />
+                                                    </>
+                                                }
+                                            </>
                                         ) : (
                                             <div className="space-y-3">
                                                 <Skeleton className="h-28 w-full rounded-xl" />

@@ -5,7 +5,7 @@ Generate a clear, engaging, and relevant title based on the following script.
 
 Rules:
 - The title must accurately reflect the core idea of the script
-- Keep it concise and natural (5–12 words)
+- Keep it concise and natural (3-5 words)
 - Avoid clickbait unless the tone of the script is promotional
 - Use simple, readable language
 - Do NOT include quotes or extra text
