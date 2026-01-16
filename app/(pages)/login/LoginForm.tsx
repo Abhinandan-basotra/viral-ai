@@ -1,7 +1,7 @@
 "use client";
 import { FormEvent, useState } from "react";
 import { signIn } from "next-auth/react";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,14 +39,12 @@ export default function LoginForm() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-black p-4 sm:p-6 lg:p-8">
-      {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-yellow-500/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-yellow-600/10 rounded-full blur-3xl"></div>
       </div>
 
       <div className="relative w-full max-w-md">
-        {/* Logo */}
         <div className="flex items-center justify-center mb-8">
           <div className="flex items-center space-x-3 group cursor-pointer">
             <div className="w-12 h-12 rounded-lg bg-linear-to-br from-yellow-400 to-yellow-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -58,9 +56,7 @@ export default function LoginForm() {
           </div>
         </div>
 
-        {/* Form Container */}
         <div className="bg-linear-to-br from-gray-900/90 to-black/90 backdrop-blur-xl border border-yellow-600/20 rounded-2xl shadow-2xl shadow-yellow-500/10 p-6 sm:p-8">
-          {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center px-4 py-2 border border-yellow-600/50 rounded-full bg-yellow-600/10 mb-4">
               <Sparkles className="w-4 h-4 text-yellow-500 mr-2" />
@@ -70,9 +66,7 @@ export default function LoginForm() {
             <p className="text-gray-400">Continue creating viral content</p>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email Field */}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium text-gray-300">
                 Email
@@ -90,7 +84,6 @@ export default function LoginForm() {
               </div>
             </div>
 
-            {/* Password Field */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password" className="text-sm font-medium text-gray-300">
@@ -113,17 +106,15 @@ export default function LoginForm() {
               </div>
             </div>
 
-            {/* Submit Button */}
             <Button
               type="submit"
               disabled={isClciked}
               className={`w-full py-3 bg-linear-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30 flex items-center justify-center gap-2 cursor-pointer ${isClciked ? "opacity-50 cursor-not-allowed" : ""}`}
             >
-              Sign In {isClciked? <Loader /> : <ArrowRight className="w-5 h-5" />}
+              Sign In {isClciked? <Loader className="animate-spin"/> : <ArrowRight className="w-5 h-5" />}
             </Button>
           </form>
 
-          {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-yellow-600/20"></div>
@@ -135,7 +126,6 @@ export default function LoginForm() {
             </div>
           </div>
 
-          {/* Social Login Buttons */}
           <div className="grid grid-cols-2 gap-4">
             <button
               type="button"
@@ -162,7 +152,6 @@ export default function LoginForm() {
             </button>
           </div>
 
-          {/* Footer */}
           <div className="mt-6 text-center">
             <p className="text-gray-400 text-sm">
               Don't have an account?{" "}
@@ -173,7 +162,6 @@ export default function LoginForm() {
           </div>
         </div>
 
-        {/* Additional Info */}
         <p className="text-center text-gray-500 text-xs mt-6">
           Protected by reCAPTCHA and subject to the ViralAI Privacy Policy
         </p>

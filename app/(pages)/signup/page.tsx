@@ -39,28 +39,24 @@ export default function SignUp() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-black p-4 sm:p-6 lg:p-8">
-      {/* Background decoration */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-yellow-500/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-yellow-600/10 rounded-full blur-3xl"></div>
       </div>
 
       <div className="relative w-full max-w-md">
-        {/* Logo */}
         <div className="flex items-center justify-center mb-8">
           <div className="flex items-center space-x-3 group cursor-pointer">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+            <div className="w-12 h-12 rounded-lg bg-linear-to-br from-yellow-400 to-yellow-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
               <Video className="w-7 h-7 text-black" />
             </div>
-            <span className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
+            <span className="text-2xl font-bold bg-linear-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
               ViralAI
             </span>
           </div>
         </div>
 
-        {/* Form Container */}
-        <div className="bg-gradient-to-br from-gray-900/90 to-black/90 backdrop-blur-xl border border-yellow-600/20 rounded-2xl shadow-2xl shadow-yellow-500/10 p-6 sm:p-8">
-          {/* Header */}
+        <div className="bg-linear-to-br from-gray-900/90 to-black/90 backdrop-blur-xl border border-yellow-600/20 rounded-2xl shadow-2xl shadow-yellow-500/10 p-6 sm:p-8">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center px-4 py-2 border border-yellow-600/50 rounded-full bg-yellow-600/10 mb-4">
               <Sparkles className="w-4 h-4 text-yellow-500 mr-2" />
@@ -70,9 +66,7 @@ export default function SignUp() {
             <p className="text-gray-400">Join thousands of creators making viral content</p>
           </div>
 
-          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Username Field */}
             <div className="space-y-2">
               <Label htmlFor="username" className="text-sm font-medium text-gray-300">
                 Username
@@ -90,7 +84,6 @@ export default function SignUp() {
               </div>
             </div>
 
-            {/* Email Field */}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium text-gray-300">
                 Email
@@ -108,7 +101,6 @@ export default function SignUp() {
               </div>
             </div>
 
-            {/* Password Field */}
             <div className="space-y-2">
               <Label htmlFor="password" className="text-sm font-medium text-gray-300">
                 Password
@@ -126,17 +118,15 @@ export default function SignUp() {
               </div>
             </div>
 
-            {/* Submit Button */}
             <Button
               type="submit"
               disabled={isClciked}
-              className="cursor-pointer w-full py-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30"
+              className="cursor-pointer w-full py-3 bg-linear-to-r from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-black font-semibold rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30"
             >
-              {isClciked ? (<>Creating Account <Loader/> </>) : "Create Account"}
+              {isClciked ? (<>Creating Account <Loader className="animate-spin"/> </>) : "Create Account"}
             </Button>
           </form>
 
-          {/* Footer */}
           <div className="mt-6 text-center">
             <p className="text-gray-400 text-sm">
               Already have an account?{" "}
@@ -147,7 +137,6 @@ export default function SignUp() {
           </div>
         </div>
 
-        {/* Additional Info */}
         <p className="text-center text-gray-500 text-xs mt-6">
           By signing up, you agree to our Terms of Service and Privacy Policy
         </p>

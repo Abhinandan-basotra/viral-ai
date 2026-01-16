@@ -22,6 +22,7 @@ export async function convert_speech_to_text(videoPath: string) {
     })
 
     const data = await res.json();
+    console.log(data);
     const subtitleFilePath = 'subtitle_temp.ass';
     await create_ass_content(data.words, subtitleFilePath);
     return subtitleFilePath;
@@ -102,15 +103,14 @@ function escapeASS(text: string) {
 
 function karaoke(words: any[]) {
   let out = "";
-  let last = words[0].start;
 
   for (const w of words) {
-    const gap = Math.max(0, Math.round((w.start - last) * 100));
-    const dur = Math.max(1, Math.round((w.end - w.start) * 100 * SPEED_FACTOR));
+    const dur = Math.max(
+      1,
+      Math.round((w.end - w.start) * 100 * SPEED_FACTOR)
+    );
 
-    if (gap) out += `{\\k${gap}} `;
-    out += `{\\kf${dur}}${escapeASS(w.text)} `;
-    last = w.end;
+    out += `{\\k${dur}}${escapeASS(w.text)} `;
   }
 
   return out.trim();
