@@ -2,7 +2,7 @@
 import Scene from "@/components/Scene";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BASE_URL } from "@/lib/constants";
+import { BASE_URL } from "@/lib/constants/constants";
 import { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";

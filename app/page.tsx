@@ -1,6 +1,6 @@
 import DashBoardButton from "@/components/DashBoardButton";
 import Footer from "@/components/Footer";
-import LogOut from "@/components/LogoutButton";
+import LandingPageButtons from "@/components/LandingPageButtons";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import { Video, Youtube, Instagram, Facebook, Sparkles } from "lucide-react";
 import { getServerSession } from "next-auth";
@@ -33,21 +33,15 @@ async function Navbar({ user }: { user: any }) {
               user && user.email ? (
                 <>
                   <DashBoardButton/>
-                  <LogOut/>
+                  <LandingPageButtons name="Logout"/>
                 </>
               ) : (
                 <>
                   <Link href="/login">
-                    <button className="cursor-pointer px-5 py-2 text-white hover:text-yellow-400 transition-colors duration-300 font-medium bg-transparent border border-yellow-600 rounded-full">
-                      Login
-                    </button>
+                    <LandingPageButtons name="Login"/>
                   </Link>
                   <Link href="/signup">
-                    <button
-                      className="cursor-pointer px-6 py-2 bg-yellow-500 text-black rounded-full font-semibold hover:bg-yellow-400 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30"
-                    >
-                      Get Started
-                    </button>
+                    <LandingPageButtons name="Get Started"/>
                   </Link>
                 </>
               )
@@ -79,15 +73,7 @@ export default async function Home() {
             <p className="text-lg sm:text-xl lg:text-2xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
               Create AI Videos in minutes. Our AI creation tool creates viral AI videos for you.
             </p>
-            {
-              user && user.email ? null : (
-                <Link href="/signup">
-                  <button className="group relative px-8 py-4 bg-yellow-500 text-black rounded-full text-lg font-semibold hover:bg-yellow-400 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-yellow-500/30">
-                    Get Started →
-                  </button>
-                </Link>
-              )
-            }
+            
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 mt-12 max-w-4xl mx-auto">
               {sampleImages.map((i) => (

@@ -32,8 +32,6 @@ export default function SignUp() {
       }
     } catch (error) {
       console.error("❌ Registration failed:", error);
-    } finally {
-      setIsClciked(false);
     }
   };
 

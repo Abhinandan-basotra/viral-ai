@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card"
 import { ChevronDown, Pause, Play, Proportions, RectangleHorizontal, RectangleVertical, Sparkles, Square, Wand2, WandSparkles } from "lucide-react"
 import { Separator } from "@/components/ui/separator";
 import GenerateScript from "@/components/GenerateScript";
-import { BASE_URL } from "@/lib/constants";
+import { BASE_URL } from "@/lib/constants/constants";
 import { LoaderThree } from "@/components/ui/loader";
 import AllVoices from "@/components/AllVoices";
 import { toast } from "react-toastify";
@@ -15,14 +15,12 @@ import { useRouter } from "next/navigation";
 import addProjectScript from "@/app/(pages)/dashboard/addProjectScript";
 import { getUser } from "@/app/(pages)/login/getSession";
 import { Dialog, DialogTrigger } from "./ui/dialog";
-interface Tune {
-    id: number;
-    name: string;
-    url: string;
-    description: string;
-}
+import { GENRES } from "@/lib/constants/genres";
+import { Tune, tunes } from "@/lib/constants/tunes";
 
-interface Voices {
+
+
+export interface Voices {
     voice_id: string;
     name: string;
     accent: string;
@@ -35,42 +33,7 @@ interface Voices {
     };
 }
 
-const GENRES = [
-    {
-        name: "4k realisitc",
-        image: '/4k.png'
-    },
-    {
-        name: "Line Art",
-        image: '/Line_Art.png'
-    },
-    {
-        name: "Anime",
-        image: '/anime.jpg'
-    },
-    {
-        name: "Cinematic",
-        image: '/Cinematic.jpeg'
-    },
-    {
-        name: "Neon Futurisitic",
-        image: '/neon_futurestic.jpg'
-    },
-    {
-        name: "Cartoon",
-        image: '/Cartoon.jpeg'
-    },
-    {
-        name: "Collage",
-        image: '/collage.jpeg'
-    },
-    {
-        name: "Japenese Ink",
-        image: '/japanese_ink.jpg'
-    }
-]
-
-export default function CreateVideo() {
+export default function CreateVideo({voices}:{voices: Voices[] | []}) {
     const [selectedGenres, setSelectedGenres] = useState<string[]>([])
     const [selectedTune, setSelectedTune] = useState<Number | null>(-1)
     const [selectedVoiceId, setSelectedVoiceId] = useState<string | null>(null);
@@ -78,10 +41,8 @@ export default function CreateVideo() {
     const [openScriptPage, setOpenScriptPage] = useState(false);
     const [script, setScript] = useState<string>("");
     const [title, setTitle] = useState("");
-    const [tunes, setTunes] = useState<Tune[]>([]);
     const [playingId, setPlayingId] = useState<string | number | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
-    const [voices, setVoices] = useState<Voices[]>([]);
     const [loading, setLoading] = useState(false);
     const [openVoices, setOpenVoices] = useState(false);
     const [aspectRatio, setAspectRatio] = useState("9:16");
@@ -193,36 +154,6 @@ export default function CreateVideo() {
         };
     }, []);
 
-    useEffect(() => {
-        const run1 = async () => {
-            try {
-                setLoading(true);
-                const voiceRes = await fetch(`${BASE_URL}/api/getVoices`);
-                const voiceData = await voiceRes.json();
-                setVoices(voiceData.voices);
-            } catch (error) {
-                console.log(error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        const run2 = async () => {
-            try {
-                setLoading(true);
-                const tuneRes = await fetch(`${BASE_URL}/api/tunes`);
-                const tuneData = await tuneRes.json();
-                setTunes(tuneData.tunes);
-            } catch (error) {
-                console.log(error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        run2();
-        run1();
-    }, [])
-
     return (
         <div className="min-h-screen">
             {openVoices && (
@@ -299,10 +230,7 @@ export default function CreateVideo() {
                         <Card className="bg-gray-900 border-gray-800 p-4 md:p-6">
                             <Label className="text-white mb-3 md:mb-4 block font-semibold">Select Tone</Label>
                             <div className={loading ? "flex justify-center items-center w-full min-h-25" : "grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4"}>
-                                {loading ? (
-                                    <LoaderThree />
-                                ) : (
-                                    <>
+                                
                                         {tunes.map((tone: Tune) => (
                                             <Card
                                                 key={tone.id}
@@ -325,8 +253,6 @@ export default function CreateVideo() {
                                                 </Button>
                                             </Card>
                                         ))}
-                                    </>
-                                )}
                             </div>
                         </Card>
 
@@ -447,12 +373,6 @@ export default function CreateVideo() {
                                     </>
                                 )}
                             </Button>
-                            <Button
-                                variant="outline"
-                                className="flex-1 border-gray-700 text-white hover:bg-gray-900 py-5 md:py-6 text-sm md:text-base bg-transparent"
-                            >
-                                Save Draft
-                            </Button>
                         </div>
                     </div>
                 </div>
@@ -471,6 +391,7 @@ export default function CreateVideo() {
                                 muted
                                 autoPlay
                                 loop
+                                preload="metadata"
                             >
                                 <source src="/videoForOutputeg.mp4" type="video/mp4" />
                                 Your browser does not support the video tag.

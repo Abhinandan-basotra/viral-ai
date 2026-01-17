@@ -7,7 +7,7 @@ import { Card } from "./ui/card";
 import { Textarea } from "./ui/textarea";
 import { Spinner } from "./ui/spinner";
 import { toast } from "react-toastify";
-import { BASE_URL } from "@/lib/constants";
+import { BASE_URL } from "@/lib/constants/constants";
 
 import {
     DialogContent,

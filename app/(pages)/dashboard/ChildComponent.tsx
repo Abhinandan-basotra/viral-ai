@@ -1,10 +1,8 @@
 "use client";
-import CreateVideo from "@/components/CreateVideo";
+import CreateVideo, { Voices } from "@/components/CreateVideo";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { Skeleton } from "@/components/ui/skeleton";
 import { TypewriterEffect } from "@/components/ui/typewriter-effect";
-import { BASE_URL } from "@/lib/constants";
 import { ChevronUp, Loader, Trash, User2, Video } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
@@ -26,10 +24,11 @@ interface Project {
   updatedAt: string;
 }
 
-export default function ChildComponent({ email, name, projects }: {
+export default function ChildComponent({ email, name, projects, voices }: {
   email: string,
   name: string,
-  projects: Array<Project> | null
+  projects: Array<Project> | null,
+  voices: Voices[] | null
 }) {
   const [show, setShow] = useState(false);
 
@@ -77,7 +76,7 @@ export default function ChildComponent({ email, name, projects }: {
             <main className="flex-1">
               <div className="p-4">
                 <SidebarTrigger />
-                <CreateVideo />
+                <CreateVideo voices={voices || []}/>
               </div>
             </main>
           </SidebarProvider>
@@ -232,20 +231,4 @@ export function SidebarComponent({ name, email, projects }: { name: string, emai
       </Sidebar>
     </>
   )
-}
-
-function ProjectSkeleton() {
-  return (
-    <div className="space-y-2 px-2">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div
-          key={i}
-          className="flex items-center gap-3 rounded-md px-3 py-2"
-        >
-          <Skeleton className="h-4 w-4 rounded-sm" />
-          <Skeleton className="h-4 w-full max-w-35" />
-        </div>
-      ))}
-    </div>
-  );
 }

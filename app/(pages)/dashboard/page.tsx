@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import ChildComponent from "./ChildComponent";
 import { getProjects } from "@/app/actions/getProjects";
-import { toast } from "react-toastify";
+import { getVoices } from "@/app/actions/getVoices";
 
 export default async function DashboardPage(){
     const session = await getServerSession(authOptions);
@@ -13,17 +13,18 @@ export default async function DashboardPage(){
     }
 
     const data = await getProjects();
-    if(!data.success) toast.error(data.message);
     
     const projects = data.projects?.map(project => ({
         ...project,
         createdAt: project.createdAt.toISOString(),
         updatedAt: project.updatedAt.toISOString(),
     })) || [];
+
+    const voices = await getVoices();
     
     return(
         <>
-            <ChildComponent name={session.user.name} email={session.user.email} projects={projects}/>
+            <ChildComponent name={session.user.name} email={session.user.email} projects={projects} voices={voices || null}/>
         </>
     )
 }

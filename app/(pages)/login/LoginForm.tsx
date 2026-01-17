@@ -32,8 +32,6 @@ export default function LoginForm() {
       }
     } catch (err) {
       console.log(err);
-    }finally{
-      setIsClciked(false);
     }
   };
 
