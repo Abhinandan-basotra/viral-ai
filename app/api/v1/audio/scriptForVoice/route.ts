@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
             combined_script += `Scene${scene.sceneNumber}: ${scene.description}\n`
         }
 
-let basePrompt = `You are a professional voice-over scriptwriter for ElevenLabs v3 TTS.
+const basePrompt = `You are a professional voice-over scriptwriter for ElevenLabs v3 TTS.
 
 TASK:
 Generate a voice-over narration script from the scene outline below, optimized for natural speech pacing.

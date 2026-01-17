@@ -8,13 +8,6 @@ import { uploadVideoToCloudinary } from "../lib/cloudinary/uploadVideoToCloudina
 import fs from 'fs';
 import { safeUnlinkSync } from "./addTune";
 
-
-const paths = {
-    videoPath: '',
-    subtitleFilePath: '',
-    finalOutput: ''
-}
-
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
 
 async function clubCaptionsAndVideo(

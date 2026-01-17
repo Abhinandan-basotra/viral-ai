@@ -6,7 +6,6 @@ import ffprobeInstaller from '@ffprobe-installer/ffprobe';
 import { downloadFile } from "@/app/lib/downloadFiles";
 import { cloudinary } from "@/app/lib/cloudinary/cloudinary";
 import fs from 'fs'
-import { updateProjectStatus } from "../generateScenes/route";
 import path from "path";
 
 ffmpeg.setFfmpegPath(ffmpegInstaller.path);
@@ -16,14 +15,14 @@ interface MergeInterface {
     imagePath: string,
     audioPath: string,
     index: number,
-    duration: any
+    duration: number
 }
 
-async function getAudioDuration(audioPath: string) {
+async function getAudioDuration(audioPath: string): Promise<number> {
     return new Promise((resolve, reject) => {
         ffmpeg.ffprobe(audioPath, (err, metadata) => {
             if (err) reject(err);
-            else resolve(metadata.format.duration);
+            else resolve(metadata.format.duration as number);
         });
     });
 }
@@ -92,8 +91,6 @@ async function mergeVideos(
   temp1: string,
   temp2: string,
   output: string,
-  startTime: number,
-  endTime: number
 ) {
   const duration1 = await new Promise<number>((resolve, reject) => {
     ffmpeg.ffprobe(temp1, (err, metadata) => {
@@ -158,7 +155,7 @@ export async function POST(req: NextRequest) {
         await downloadFile(imageUrl, imagePath);
         await downloadFile(audioUrl, audioPath);
 
-        const duration = await getAudioDuration(audioPath)
+        const duration: number = await getAudioDuration(audioPath)
 
         const output = await mergeImageWithAudios({ imagePath, audioPath, index: scene.sceneNumber, duration });
         fs.unlinkSync(imagePath);
@@ -183,7 +180,7 @@ export async function POST(req: NextRequest) {
             fs.copyFileSync(output.mergedImageAudioPath, finalOutputPath);
         }else{
             const tmpMerged = `tmp_${index}.mp4`;
-            await mergeVideos(finalOutputPath, output.mergedImageAudioPath, tmpMerged, startTime, endTime);
+            await mergeVideos(finalOutputPath, output.mergedImageAudioPath, tmpMerged);
             try {
                 fs.copyFileSync(tmpMerged, finalOutputPath);
             } finally {

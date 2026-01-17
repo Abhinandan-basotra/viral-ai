@@ -132,7 +132,6 @@ function ScrollAreaPro({
   const scrollX = useMotionValue(0)
   const scrollY = useMotionValue(0)
   const progressBarScaleX = useTransform(scrollX, [0, 100], [0, 1])
-  const progressBarScaleY = useTransform(scrollY, [0, 100], [0, 1])
   
   const verticalScrollProgress = useMotionValue(0)
   const progressHeight = containerHeight - 20
@@ -409,7 +408,7 @@ function ScrollAreaPro({
               transition={{ delay: 0.2 }}
             >
               <motion.div 
-                className="h-full bg-gradient-to-r from-blue-500 to-purple-500 origin-left"
+                className="h-full bg-linear-to-r from-blue-500 to-purple-500 origin-left"
                 style={{ scaleX: progressBarScaleX }}
               />
             </motion.div>

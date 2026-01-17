@@ -22,10 +22,23 @@ import { addTune } from "../../actions/addTune";
 import { toast } from "react-toastify";
 import { addCaption } from "@/app/actions/addCaption";
 
+interface SceneInterface {
+    id: string;
+    projectId: string;
+    sceneNumber: number;
+    createdAt: Date;
+    updatedAt: Date;
+    description: string;
+    startTime: string;
+    endTime: string;
+    finalUrl: string;
+    status: string;
+}
+
 
 export default function FinalVideo() {
     const lastIdRef = useRef<string | null>(null);
-    const [scenes, setScenes] = useState<any[]>([]);
+    const [scenes, setScenes] = useState<SceneInterface[]>([]);
     const [projectUrl, setProjectUrl] = useState("");
     const [progress, setProgress] = useState(0);
     const isPollingDone = useRef(false);
@@ -64,7 +77,7 @@ export default function FinalVideo() {
 
             const incomingScenes =
                 (data?.neededScenes ?? data?.allScenes ?? [])
-                    .filter((scene: any) => scene.status === "Generated");
+                    .filter((scene: SceneInterface) => scene.status === "Generated");
 
 
             if (incomingScenes.length > 0) {

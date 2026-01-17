@@ -1,5 +1,3 @@
-import { NextResponse } from "next/server";
-
 export async function getVoices() {
     const api_key = process.env.VOICE_GENERATION_KEY as string;
     try {

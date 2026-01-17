@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db";
 
-interface RouteParam {
-    params: {
-        id: string,
-        projectId: string
-    }
+type Params = {
+    projectId: string;
+    id: string;
 }
 
-export async function GET(req: NextRequest, { params }: RouteParam) {
+export async function GET(
+    req: NextRequest,
+    { params }: { params: Promise<Params> }
+) {
     try {
-        const { id } = await params;
-        const { projectId } = await params;
+        const { projectId, id } = await params;
         const project = await prisma.project.findFirst({
             where: {
                 id: projectId

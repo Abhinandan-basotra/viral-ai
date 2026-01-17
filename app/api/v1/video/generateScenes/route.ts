@@ -136,7 +136,7 @@ Your task is to break down the given script into a list of visually compelling s
             })
         })
 
-        const voiceData = await voiceRes.json();
+        await voiceRes.json();
 
 
         await updateProjectStatus(projectId, "Generating Assets");

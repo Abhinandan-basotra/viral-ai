@@ -12,6 +12,18 @@ Topic: ${idea}
 Make it cinematic, emotional, and inspiring.
 Only write the narration text. No labels. No scene descriptions. No abuses
 Start with a strong hook and end with a powerful message.
+
+eg:-  title: write a story script for a student who is going to his school.
+      output: “Today, he didn’t want to go to school.
+
+School isn’t just a building.
+It’s where fear meets courage.
+
+He takes a deep breath.
+Steps inside.
+
+Because sometimes, the hardest walk…
+is the one that builds your future.
 `;
         
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=${process.env.GEMINI_API}`, {

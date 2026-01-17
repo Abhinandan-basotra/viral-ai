@@ -20,7 +20,11 @@ export default function GenerateScript({
     setOpen,
     generatedScript,
     title,
-}: any) {
+}: {
+    setOpen: (prev: boolean) => void;
+    generatedScript: (prev: string) => void;
+    title: (prev: string) => void;
+}) {
     const [selectedDuration, setSelectedDuration] = useState<string | null>(null);
     const [idea, setIdea] = useState("");
     const [loading, setLoading] = useState(false);
@@ -63,6 +67,7 @@ export default function GenerateScript({
                 toast.error(data.message);
             }
         } catch (err) {
+            console.log(err);
             toast.error("Server error");
         } finally {
             setLoading(false);
@@ -79,7 +84,7 @@ export default function GenerateScript({
                 <Textarea
                     value={idea}
                     onChange={(e) => setIdea(e.target.value)}
-                    placeholder="Enter a prompt for your video script..."
+                    placeholder="(e.g Write a Story Script for a king playing with his son)"
                     className="min-h-45 resize-none"
                 />
 

@@ -29,7 +29,7 @@ export async function POST(req: NextRequest){
     }
 }
 
-export async function GET(req: NextRequest){
+export async function GET(){
     try {
         const tunes = await prisma.tunes.findMany();
         return NextResponse.json({message: "tunes fetched successfully", success: true, tunes});

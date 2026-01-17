@@ -1,10 +1,10 @@
 import { getServerSession } from "next-auth"
 import React from "react";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import ChildComponent from "./ChildComponent";
 import { getProjects } from "@/app/actions/getProjects";
 import { getVoices } from "@/app/actions/getVoices";
+import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
 
 export default async function DashboardPage(){
     const session = await getServerSession(authOptions);

@@ -4,7 +4,7 @@ interface SceneInterface {
   scene: {
     id: string;
     projectId: string;
-    sceneNumber: Number;
+    sceneNumber: number;
     createdAt: Date;
     updatedAt: Date;
     description: string;

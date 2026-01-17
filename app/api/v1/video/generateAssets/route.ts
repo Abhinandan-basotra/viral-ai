@@ -49,7 +49,7 @@ export async function POST(req: NextRequest){
                 sceneNumber: Number(sceneNumber)
             }
         });
-        const asset = await prisma.asset.create({
+        await prisma.asset.create({
             data:{
                 projectId: projectId,
                 type: "image",

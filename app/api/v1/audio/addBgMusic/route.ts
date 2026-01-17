@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db";
-import axios from "axios";
 import fs from "fs";
 import ffmpeg from 'fluent-ffmpeg';
 import ffmpegInstaller from '@ffmpeg-installer/ffmpeg'
@@ -31,9 +30,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const results = [];
-
-        let tuneOffset = 0; // in milliseconds
+        let tuneOffset = 0; 
         
 
         for (const audio of audios) {

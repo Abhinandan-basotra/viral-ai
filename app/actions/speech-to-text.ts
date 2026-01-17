@@ -1,5 +1,15 @@
 import fs from 'fs';
 const SPEED_FACTOR = 1.25;
+
+interface Word {
+  text: string;
+  start: number;
+  end: number;
+  type: string;
+  speaker_id: string;
+  logprob: string;
+};
+
 export async function convert_speech_to_text(videoPath: string) {
     const formData = new FormData();
 
@@ -29,7 +39,7 @@ export async function convert_speech_to_text(videoPath: string) {
 }
 
 
-async function create_ass_content(words: any[], subtitleFilePath: string) {
+async function create_ass_content(words: Word[], subtitleFilePath: string) {
   const spoken = words.filter(w => w.type === "word");
   const lines = groupWords(spoken, 3);
 
@@ -68,12 +78,12 @@ function fmt(t: number) {
 }
 
 function groupWords(
-  words: any[],
+  words: Word[],
   maxWordsPerLine = 4,
   maxGap = 0.6 
 ) {
-  const lines: any[] = [];
-  let current: any[] = [];
+  const lines: Word[][] = [];
+  let current: Word[] = [];
 
   for (const w of words) {
     if (w.type !== "word") continue;
@@ -101,7 +111,7 @@ function escapeASS(text: string) {
 }
 
 
-function karaoke(words: any[]) {
+function karaoke(words: Word[]) {
   let out = "";
 
   for (const w of words) {

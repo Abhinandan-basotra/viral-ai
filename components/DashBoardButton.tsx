@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutGrid, Loader, Loader2 } from "lucide-react";
+import { LayoutGrid } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 

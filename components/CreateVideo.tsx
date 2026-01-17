@@ -8,7 +8,6 @@ import { ChevronDown, Pause, Play, Proportions, RectangleHorizontal, RectangleVe
 import { Separator } from "@/components/ui/separator";
 import GenerateScript from "@/components/GenerateScript";
 import { BASE_URL } from "@/lib/constants/constants";
-import { LoaderThree } from "@/components/ui/loader";
 import AllVoices from "@/components/AllVoices";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
@@ -35,7 +34,7 @@ export interface Voices {
 
 export default function CreateVideo({voices}:{voices: Voices[] | []}) {
     const [selectedGenres, setSelectedGenres] = useState<string[]>([])
-    const [selectedTune, setSelectedTune] = useState<Number | null>(-1)
+    const [selectedTune, setSelectedTune] = useState<number | null>(-1)
     const [selectedVoiceId, setSelectedVoiceId] = useState<string | null>(null);
     const [isGenerating, setIsGenerating] = useState(false)
     const [openScriptPage, setOpenScriptPage] = useState(false);
@@ -43,7 +42,6 @@ export default function CreateVideo({voices}:{voices: Voices[] | []}) {
     const [title, setTitle] = useState("");
     const [playingId, setPlayingId] = useState<string | number | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
-    const [loading, setLoading] = useState(false);
     const [openVoices, setOpenVoices] = useState(false);
     const [aspectRatio, setAspectRatio] = useState("9:16");
 
@@ -53,7 +51,7 @@ export default function CreateVideo({voices}:{voices: Voices[] | []}) {
         setSelectedGenres((prev) => (prev.includes(genre) ? prev.filter((g) => g !== genre) : [genre]))
     }
 
-    const toggleTone = (tone: Number) => {
+    const toggleTone = (tone: number) => {
         setSelectedTune((prev) => (prev === tone? null : tone))
     }
 
@@ -229,7 +227,7 @@ export default function CreateVideo({voices}:{voices: Voices[] | []}) {
 
                         <Card className="bg-gray-900 border-gray-800 p-4 md:p-6">
                             <Label className="text-white mb-3 md:mb-4 block font-semibold">Select Tone</Label>
-                            <div className={loading ? "flex justify-center items-center w-full min-h-25" : "grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4"}>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                                 
                                         {tunes.map((tone: Tune) => (
                                             <Card
@@ -259,10 +257,7 @@ export default function CreateVideo({voices}:{voices: Voices[] | []}) {
                         <Card className="bg-gray-900 border-gray-800 p-4 md:p-6">
                             <Label className="text-white mb-3 md:mb-4 block font-semibold">Select Voice</Label>
 
-                            <div className={!loading ? "grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 mb-4" : "flex justify-center items-center w-full min-h-25"}>
-                                {loading ? (
-                                    <LoaderThree />
-                                ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                                     <>
                                         {voices.slice(0, 4).map((voice: Voices) => {
                                             const isSelected = selectedVoiceId === voice.voice_id;
@@ -312,7 +307,6 @@ export default function CreateVideo({voices}:{voices: Voices[] | []}) {
                                             );
                                         })}
                                     </>
-                                )}
                             </div>
 
                             <div className="flex justify-center">
