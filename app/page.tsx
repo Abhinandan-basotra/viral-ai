@@ -1,5 +1,6 @@
 import DashBoardButton from "@/components/DashBoardButton";
 import Footer from "@/components/Footer";
+import GetStartedButton from "@/components/GetStartedButton";
 import LandingPageButtons from "@/components/LandingPageButtons";
 import { BackgroundBeams } from "@/components/ui/background-beams";
 import { Video, Youtube, Instagram, Facebook, Sparkles } from "lucide-react";
@@ -125,9 +126,7 @@ export default async function Home() {
                 Join thousands of creators already making viral content with AI
               </p>
               <Link href="/signup">
-                <button className="px-10 py-5 bg-yellow-500 text-black rounded-full text-xl font-semibold hover:bg-yellow-400 transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-yellow-500/30">
-                  Get Started Free
-                </button>
+                <GetStartedButton/>
               </Link>
             </div>
           </div>
