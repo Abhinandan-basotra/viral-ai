@@ -26,6 +26,7 @@ export default function LoginForm() {
 
       if (res?.error) {
         toast.error("Invalid credentials");
+        setIsClciked(false);
       } else {
         toast.success("Login successful");
         router.push("/dashboard");
