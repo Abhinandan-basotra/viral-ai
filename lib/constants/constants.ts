@@ -1,1 +1,1 @@
-export const BASE_URL = "https://viral-ai-ashy.vercel.app/"
+export const BASE_URL = "https://viral-ai-ashy.vercel.app"
