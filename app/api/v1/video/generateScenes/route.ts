@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
         const aspectRatio = data.aspectRatio;
         const voiceId = data.voiceId;
         const tuneId = data.tuneId;
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+        const baseUrl = process.env.BASE_URL;
 
 
         await updateProjectStatus(projectId, "Generating Scenes");
