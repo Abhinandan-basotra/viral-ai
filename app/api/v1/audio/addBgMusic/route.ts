@@ -38,8 +38,8 @@ export async function POST(req: NextRequest) {
         
 
         for (const audio of audios) {
-            let voicePath = `/tmp/voice-${audio.id}.mp3`;
-            let bgPath = `/tmp/bg-${audio.id}.mp3`;
+            const voicePath = `/tmp/voice-${audio.id}.mp3`;
+            const bgPath = `/tmp/bg-${audio.id}.mp3`;
             const outputPath = `/tmp/merged-${audio.id}.mp3`;
 
             if (audio.url) {
