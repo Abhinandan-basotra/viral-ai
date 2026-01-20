@@ -1,21 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db";
 import ffmpeg from "fluent-ffmpeg";
-import ffmpegInstaller from '@ffmpeg-installer/ffmpeg';
-import ffprobeInstaller from '@ffprobe-installer/ffprobe';
+import ffmpegStatic from 'ffmpeg-static';
+import ffprobeStatic from 'ffprobe-static';
 import { downloadFile } from "@/app/lib/downloadFiles";
 import { cloudinary } from "@/app/lib/cloudinary/cloudinary";
 import fs from 'fs'
 import path from "path";
 
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
-ffmpeg.setFfprobePath(ffprobeInstaller.path);
+// Set the paths for ffmpeg and ffprobe with null checks
+if (ffmpegStatic) {
+  ffmpeg.setFfmpegPath(ffmpegStatic);
+}
+if (ffprobeStatic) {
+  ffmpeg.setFfprobePath(ffprobeStatic);
+}
 
 interface MergeInterface {
-    imagePath: string,
-    audioPath: string,
-    index: number,
-    duration: number
+  imagePath: string,
+  audioPath: string,
+  index: number,
+  duration: number
 }
 
 async function getAudioDuration(audioPath: string): Promise<number> {

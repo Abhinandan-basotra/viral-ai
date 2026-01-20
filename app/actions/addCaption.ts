@@ -2,13 +2,15 @@
 import { downloadFile } from "../lib/downloadFiles";
 import { convert_speech_to_text } from "./speech-to-text";
 import ffmpeg from 'fluent-ffmpeg';
-import ffmpegInstaller from "@ffmpeg-installer/ffmpeg"
+import ffmpegStatic from 'ffmpeg-static';
 import prisma from "../lib/db";
 import { uploadVideoToCloudinary } from "../lib/cloudinary/uploadVideoToCloudinary";
 import fs from 'fs';
 import { safeUnlinkSync } from "./addTune";
 
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
+if (ffmpegStatic) {
+  ffmpeg.setFfmpegPath(ffmpegStatic);
+}
 
 async function clubCaptionsAndVideo(
     videoPath: string,

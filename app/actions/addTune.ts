@@ -3,8 +3,8 @@
 import { downloadFile } from "@/app/lib/downloadFiles";
 import prisma from "@/app/lib/db";
 import ffmpeg from "fluent-ffmpeg";
-import ffmpegInstaller from "@ffmpeg-installer/ffmpeg";
-import ffprobeInstaller from "@ffprobe-installer/ffprobe";
+import ffmpegStatic from 'ffmpeg-static';
+import ffprobeStatic from 'ffprobe-static';
 import fs from "fs";
 import { uploadVideoToCloudinary } from "@/app/lib/cloudinary/uploadVideoToCloudinary";
 
@@ -16,8 +16,12 @@ const paths = {
   finalVideoPath: "",
 };
 
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
-ffmpeg.setFfprobePath(ffprobeInstaller.path);
+if (ffmpegStatic) {
+  ffmpeg.setFfmpegPath(ffmpegStatic);
+}
+if (ffprobeStatic) {
+  ffmpeg.setFfprobePath(ffprobeStatic);
+}
 
 export async function safeUnlinkSync(filePath?: string) {
   if (!filePath) return;

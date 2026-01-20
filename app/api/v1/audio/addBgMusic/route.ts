@@ -2,13 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db";
 import fs from "fs";
 import ffmpeg from 'fluent-ffmpeg';
-import ffmpegInstaller from '@ffmpeg-installer/ffmpeg'
-import ffprobeInstaller from '@ffprobe-installer/ffprobe'
+import ffmpegStatic from 'ffmpeg-static';
+import ffprobeStatic from 'ffprobe-static';
 import { downloadFile } from "@/app/lib/downloadFiles";
 import { uploadAudioToCloudinary } from "@/app/lib/cloudinary/uploadAudioToCloudinary";
 
-ffmpeg.setFfmpegPath(ffmpegInstaller.path);
-ffmpeg.setFfprobePath(ffprobeInstaller.path);
+if (ffmpegStatic) {
+  ffmpeg.setFfmpegPath(ffmpegStatic);
+}
+if (ffprobeStatic) {
+  ffmpeg.setFfprobePath(ffprobeStatic);
+}
 
 export async function POST(req: NextRequest) {
     try {
