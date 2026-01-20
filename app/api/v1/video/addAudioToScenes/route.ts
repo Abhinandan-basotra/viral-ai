@@ -94,7 +94,10 @@ async function mergeVideos(
 ) {
   const duration1 = await new Promise<number>((resolve, reject) => {
     ffmpeg.ffprobe(temp1, (err, metadata) => {
-      if (err) return reject(err);
+      if (err){
+        console.error(err);
+        return reject(err);
+      }
       resolve(metadata.format.duration as number);
     });
   });
@@ -199,7 +202,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({ message: "Audio added to scene", success: true, url: output.url, sceneEndTime: endTime, outputPath: output.mergedImageAudioPath });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return NextResponse.json({ message: "Internal Server Error", success: false }, { status: 500 })
     }
 }
