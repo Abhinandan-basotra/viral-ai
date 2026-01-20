@@ -1,6 +1,5 @@
 import axios from "axios";
 import fs from "fs";
-
 /**
  * Downloads a file from a URL and saves it locally.
  * @param url - The file URL

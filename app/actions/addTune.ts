@@ -7,6 +7,7 @@ import ffmpegStatic from 'ffmpeg-static';
 import ffprobeStatic from 'ffprobe-static';
 import fs from "fs";
 import { uploadVideoToCloudinary } from "@/app/lib/cloudinary/uploadVideoToCloudinary";
+import path from "path";
 
 const paths = {
   projectPath: "",
@@ -20,7 +21,7 @@ if (ffmpegStatic) {
   ffmpeg.setFfmpegPath(ffmpegStatic);
 }
 if (ffprobeStatic) {
-  ffmpeg.setFfprobePath(ffprobeStatic);
+  ffmpeg.setFfprobePath(ffprobeStatic.path);
 }
 
 export async function safeUnlinkSync(filePath?: string) {
@@ -35,8 +36,8 @@ export async function safeUnlinkSync(filePath?: string) {
 }
 
 function extractAudio(projectPath: string): Promise<string> {
-  const audioPath = `projectAudio-${Date.now()}.mp3`;
-  const videoOnlyPath = `video-only-${Date.now()}.mp4`;
+  const audioPath = `/tmp/projectAudio-${Date.now()}.mp3`;
+  const videoOnlyPath = `/tmp/video-only-${Date.now()}.mp4`;
 
   return new Promise((resolve, reject) => {
     ffmpeg(projectPath)
@@ -65,7 +66,9 @@ function mixTuneWithAudio(
   voicePath: string,
   tunePath: string
 ): Promise<string> {
-  const outputPath = `${voicePath.replace(".mp3", "")}-with-tune.mp3`;
+  // Extract just the filename and create new output name
+  const baseFilename = path.basename(voicePath, '.mp3');
+  const outputPath = path.join('/tmp', `${baseFilename}-with-tune.mp3`);
 
   return new Promise((resolve, reject) => {
     ffmpeg()
@@ -91,7 +94,7 @@ function mergeAudioWithVideo(
   audio: string,
   video: string
 ): Promise<string> {
-  const outputPath = `final-video-${Date.now()}.mp4`;
+  const outputPath = `/tmp/final-video-${Date.now()}.mp4`;
 
   return new Promise((resolve, reject) => {
     ffmpeg()
@@ -133,11 +136,9 @@ export async function addTune(projectId: string) {
       return { message: "Tune not found", success: false};
     }
 
-    paths.projectPath = `project-${Date.now()}.mp4`;
-    paths.tunePath = `tune-${tuneId}.mp3`;
-
-    await downloadFile(projectUrl, paths.projectPath);
-    await downloadFile(tune.url, paths.tunePath);
+    // Download files - pass just the filename
+    await downloadFile(projectUrl, `/tmp/project-${Date.now()}.mp4`);
+    await downloadFile(tune.url, `/tmp/tune-${tuneId}.mp3`);
 
     paths.projectAudioPath = await extractAudio(paths.projectPath);
 
@@ -167,8 +168,8 @@ export async function addTune(projectId: string) {
     return { message: "Tune added Successfully", finalUrl: finalUrl, success: true};
 
   } catch (error) {
-    console.error(error);
-    return { message: "Error while adding tune" };
+    console.error("Error adding tune:", error);
+    return { message: "Error while adding tune", success: false };
 
   } finally {
     safeUnlinkSync(paths.projectPath);

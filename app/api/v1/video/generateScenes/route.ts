@@ -141,7 +141,7 @@ Your task is to break down the given script into a list of visually compelling s
 
         await updateProjectStatus(projectId, "Generating Assets");
         let projectProgress = 0;
-        const finalOutputPath = `finalOutput_${projectId}.mp4`;
+        const finalOutputPath = `/tmp/finalOutput_${projectId}.mp4`;
         const totalScenes = scenes.length;
         for (let i = 0; i < totalScenes; i++) {
             if(await isCancelled(projectId)){

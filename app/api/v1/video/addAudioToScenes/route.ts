@@ -13,7 +13,7 @@ if (ffmpegStatic) {
   ffmpeg.setFfmpegPath(ffmpegStatic);
 }
 if (ffprobeStatic) {
-  ffmpeg.setFfprobePath(ffprobeStatic);
+  ffmpeg.setFfprobePath(ffprobeStatic.path);
 }
 
 interface MergeInterface {
@@ -36,7 +36,7 @@ async function getAudioDuration(audioPath: string): Promise<number> {
 
 ///function to merge audio and image
 async function mergeImageWithAudios({ imagePath, audioPath, index, duration }: MergeInterface) {
-    const output = `output_scene_${index}.mp4`;
+    const output = `/tmp/output_scene_${index}.mp4`;
     const roundedDuration = Math.ceil(duration);
 
     await new Promise<void>((resolve, reject) => {
@@ -144,20 +144,25 @@ export async function POST(req: NextRequest) {
         const data = await req.json();
         const audioUrl = data.audioUrl;
         const imageUrl = data.imageUrl;
-        const scene = data.scene;
+        // const scene = data.scene;
+        const sceneId = data.sceneId;
         const projectProgress = data.progress;
         const finalOutputPath = data.outputPath;
         const index = data.index;
         
-        console.log(scene.sceneNumber);
+        // console.log(scene.sceneNumber);
         
-        
+        const scene = await prisma.scene.findFirst({
+            where: {
+                id: sceneId
+            }
+        })
 
         if (!scene) {
             throw new Error("Scene not found")
         }
-        const imagePath = `scene_${scene.sceneNumber}.jpg`;
-        const audioPath = `audio_${scene.sceneNumber}.mp3`;
+        const imagePath = `/tmp/scene_${scene.sceneNumber}.jpg`;
+        const audioPath = `/tmp/audio_${scene.sceneNumber}.mp3`;
  
 
         await downloadFile(imageUrl, imagePath);
@@ -207,7 +212,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({ message: "Audio added to scene", success: true, url: output.url, sceneEndTime: endTime, outputPath: output.mergedImageAudioPath });
     } catch (error) {
-        console.error(error);
+        console.error("error: ", error);
         return NextResponse.json({ message: "Internal Server Error", success: false }, { status: 500 })
     }
 }

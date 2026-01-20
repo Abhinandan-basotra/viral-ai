@@ -11,7 +11,7 @@ if (ffmpegStatic) {
   ffmpeg.setFfmpegPath(ffmpegStatic);
 }
 if (ffprobeStatic) {
-  ffmpeg.setFfprobePath(ffprobeStatic);
+  ffmpeg.setFfprobePath(ffprobeStatic.path);
 }
 
 export async function POST(req: NextRequest) {
@@ -38,8 +38,8 @@ export async function POST(req: NextRequest) {
         
 
         for (const audio of audios) {
-            const voicePath = `/tmp/voice-${audio.id}.mp3`;
-            const bgPath = `/tmp/bg-${audio.id}.mp3`;
+            let voicePath = `/tmp/voice-${audio.id}.mp3`;
+            let bgPath = `/tmp/bg-${audio.id}.mp3`;
             const outputPath = `/tmp/merged-${audio.id}.mp3`;
 
             if (audio.url) {

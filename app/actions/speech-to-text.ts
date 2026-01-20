@@ -33,7 +33,7 @@ export async function convert_speech_to_text(videoPath: string) {
 
     const data = await res.json();
     console.log(data);
-    const subtitleFilePath = 'subtitle_temp.ass';
+    const subtitleFilePath = '/tmp/subtitle_temp.ass';
     await create_ass_content(data.words, subtitleFilePath);
     return subtitleFilePath;
 }

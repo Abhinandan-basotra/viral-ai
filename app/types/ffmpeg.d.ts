@@ -4,6 +4,6 @@ declare module 'ffmpeg-static' {
 }
 
 declare module 'ffprobe-static' {
-  const ffprobePath: string;
+  const ffprobePath: {path: string};
   export default ffprobePath;
 }

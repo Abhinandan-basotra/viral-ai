@@ -16,7 +16,7 @@ async function clubCaptionsAndVideo(
     videoPath: string,
     subtitleFilePath: string
 ): Promise<string> {
-    const outputPath = `final_${Date.now()}.mp4`;
+    const outputPath = `/tmp/final_${Date.now()}.mp4`;
 
     return new Promise((resolve, reject) => {
         ffmpeg(videoPath)
@@ -53,7 +53,7 @@ export async function addCaption(videoUrl: string, projectId: string) {
             return { success: false, message: "Already added" };
         }
 
-        videoPath = `video_${Date.now()}.mp4`;
+        videoPath = `/tmp/video_${Date.now()}.mp4`;
         await downloadFile(videoUrl, videoPath);
 
         subtitlePath = await convert_speech_to_text(videoPath);
