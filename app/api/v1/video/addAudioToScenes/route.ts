@@ -8,12 +8,27 @@ import { cloudinary } from "@/app/lib/cloudinary/cloudinary";
 import fs from 'fs'
 import path from "path";
 
-// Set the paths for ffmpeg and ffprobe with null checks
+// Set the paths for ffmpeg and ffprobe with proper error handling
 if (ffmpegStatic) {
   ffmpeg.setFfmpegPath(ffmpegStatic);
+  console.log('FFmpeg path set to:', ffmpegStatic);
+} else {
+  console.error('FFmpeg static path not found');
 }
-if (ffprobeStatic) {
+
+if (ffprobeStatic && ffprobeStatic.path) {
   ffmpeg.setFfprobePath(ffprobeStatic.path);
+  console.log('FFprobe path set to:', ffprobeStatic.path);
+} else {
+  console.error('FFprobe static path not found, attempting fallback');
+  // Try alternative path for Vercel
+  const ffprobePath = path.join(process.cwd(), 'node_modules', 'ffprobe-static', 'bin', 'linux', 'x64', 'ffprobe');
+  if (fs.existsSync(ffprobePath)) {
+    ffmpeg.setFfprobePath(ffprobePath);
+    console.log('FFprobe fallback path set to:', ffprobePath);
+  } else {
+    console.error('FFprobe not found at fallback path either');
+  }
 }
 
 interface MergeInterface {
@@ -25,9 +40,27 @@ interface MergeInterface {
 
 async function getAudioDuration(audioPath: string): Promise<number> {
     return new Promise((resolve, reject) => {
+        // First check if file exists
+        if (!fs.existsSync(audioPath)) {
+            reject(new Error(`Audio file not found: ${audioPath}`));
+            return;
+        }
+
         ffmpeg.ffprobe(audioPath, (err, metadata) => {
-            if (err) reject(err);
-            else resolve(metadata.format.duration as number);
+            if (err) {
+                console.error('FFprobe error:', err);
+                // Fallback: try to get duration from ffmpeg directly
+                ffmpeg.ffprobe(audioPath, (probeErr, probeMetadata) => {
+                    if (probeErr) {
+                        console.error('FFprobe fallback also failed:', probeErr);
+                        reject(new Error(`Failed to get audio duration: ${probeErr.message}`));
+                    } else {
+                        resolve(probeMetadata.format.duration as number);
+                    }
+                });
+            } else {
+                resolve(metadata.format.duration as number);
+            }
         });
     });
 }
@@ -64,7 +97,13 @@ async function mergeImageWithAudios({ imagePath, audioPath, index, duration }: M
             ])
             .save(output)
             .on("end", () => {
-                resolve();
+                // Verify the output file was created
+                if (fs.existsSync(output)) {
+                    console.log(`Successfully created output file: ${output}`);
+                    resolve();
+                } else {
+                    reject(new Error(`Output file was not created: ${output}`));
+                }
             })
             .on("error", (err) => {
                 console.error("❌ FFmpeg error:", err.message);
@@ -154,13 +193,12 @@ export async function POST(req: NextRequest) {
         const data = await req.json();
         const audioUrl = data.audioUrl;
         const imageUrl = data.imageUrl;
-        // const scene = data.scene;
         const sceneId = data.sceneId;
         const projectProgress = data.progress;
         const finalOutputPath = data.outputPath;
         const index = data.index;
         
-        // console.log(scene.sceneNumber);
+        console.log('Processing scene:', { sceneId, index, finalOutputPath });
         
         const scene = await prisma.scene.findFirst({
             where: {
@@ -171,12 +209,22 @@ export async function POST(req: NextRequest) {
         if (!scene) {
             throw new Error("Scene not found")
         }
+        
         const imagePath = `/tmp/scene_${scene.sceneNumber}.jpg`;
         const audioPath = `/tmp/audio_${scene.sceneNumber}.mp3`;
- 
+        
+        console.log('Downloading files:', { imageUrl, audioUrl, imagePath, audioPath });
 
         await downloadFile(imageUrl, imagePath);
         await downloadFile(audioUrl, audioPath);
+        
+        // Verify files were downloaded
+        if (!fs.existsSync(imagePath)) {
+            throw new Error(`Image file not found after download: ${imagePath}`);
+        }
+        if (!fs.existsSync(audioPath)) {
+            throw new Error(`Audio file not found after download: ${audioPath}`);
+        }
 
         const duration: number = await getAudioDuration(audioPath)
 
