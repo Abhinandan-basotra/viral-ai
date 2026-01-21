@@ -79,7 +79,6 @@ async function mergeImageWithAudios({ imagePath, audioPath, index, duration }: M
             use_filename: true,
         });
 
-
         return {
             url: uploadRes.secure_url,
             duration: uploadRes.duration,
@@ -87,6 +86,11 @@ async function mergeImageWithAudios({ imagePath, audioPath, index, duration }: M
             mergedImageAudioPath: output
         };
     } catch (err) {
+        console.error('Cloudinary upload error:', err);
+        // Clean up the output file if upload fails
+        if (fs.existsSync(output)) {
+            fs.unlinkSync(output);
+        }
         throw err;
     }
 }
@@ -133,8 +137,14 @@ async function mergeVideos(
         "-pix_fmt", "yuv420p",
         "-movflags", "+faststart",
       ])
-      .on("error", e => reject(e))
-      .on("end", () => resolve())
+      .on("error", (err) => {
+        console.error('FFmpeg merge error:', err);
+        reject(err);
+      })
+      .on("end", () => {
+        console.log('FFmpeg merge completed successfully');
+        resolve();
+      })
       .save(path.resolve(output));
   });
 }
@@ -192,14 +202,18 @@ export async function POST(req: NextRequest) {
         if(index == 0){
             fs.copyFileSync(output.mergedImageAudioPath, finalOutputPath);
         }else{
-            const tmpMerged = `tmp_${index}.mp4`;
+            const tmpMerged = `/tmp/tmp_${index}.mp4`;
             await mergeVideos(finalOutputPath, output.mergedImageAudioPath, tmpMerged);
             try {
-                fs.copyFileSync(tmpMerged, finalOutputPath);
-            } finally {
                 if (fs.existsSync(tmpMerged)) {
+                    fs.copyFileSync(tmpMerged, finalOutputPath);
                     fs.unlinkSync(tmpMerged);
+                } else {
+                    throw new Error(`Temporary merge file ${tmpMerged} was not created`);
                 }
+            } catch (error) {
+                console.error('Error copying merged file:', error);
+                throw error;
             }
         }
 

@@ -19,8 +19,10 @@ export async function updateProjectStatus(projectId: string, status: string) {
 }
 
 export async function POST(req: NextRequest) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let data: any;
     try {
-        const data = await req.json();
+        data = await req.json();
         const projectId = data.projectId;
         const type = data.type
         const generationPreset = data.generationPreset;
@@ -220,6 +222,12 @@ Your task is to break down the given script into a list of visually compelling s
             const mergeData = await mergeRes.json();
             projectProgress = Number(mergeData.sceneEndTime);
             await updateSceneStatus(scene.id, "Generated");
+            
+            // Check if final output file exists before uploading
+            if (!fs.existsSync(finalOutputPath)) {
+                throw new Error(`Final output file not found: ${finalOutputPath}`);
+            }
+            
             const finalOutputRes = await uploadVideoToCloudinary(new Blob([fs.readFileSync(finalOutputPath)]), "final");
             await prisma.project.update({
                 where: {
@@ -229,19 +237,48 @@ Your task is to break down the given script into a list of visually compelling s
                     finalUrl: finalOutputRes,
                     progress: ((i+1)*100)/totalScenes,
                     title: title,
-                    tuneId: tuneId
+                    tuneId: tuneId ? parseInt(tuneId, 10) : null
                 }
             })
         }
 
         await updateProjectStatus(projectId, "Generated");
 
-        fs.unlinkSync(finalOutputPath);  
+        // Clean up final output file if it exists
+        try {
+            if (fs.existsSync(finalOutputPath)) {
+                fs.unlinkSync(finalOutputPath);
+            }
+        } catch (cleanupError) {
+            console.error('Error cleaning up final output file:', cleanupError);
+        }  
 
 
         return NextResponse.json({ message: "Scenes and Images Generated", success: true, scenes: generatedScenes });
-    } catch (error) {
-        console.log(error);
-        return NextResponse.json({ message: "Internal Server Error", success: false })
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorStack = error instanceof Error ? error.stack : undefined;
+        
+        console.error('Generate Scenes Error:', {
+            message: errorMessage,
+            stack: errorStack,
+            projectId: data?.projectId || 'unknown'
+        });
+        
+        // Clean up final output file on error
+        const finalOutputPath = `/tmp/finalOutput_${data?.projectId || 'unknown'}.mp4`;
+        try {
+            if (fs.existsSync(finalOutputPath)) {
+                fs.unlinkSync(finalOutputPath);
+            }
+        } catch (cleanupError) {
+            console.error('Error cleaning up during error handling:', cleanupError);
+        }
+        
+        return NextResponse.json({ 
+            message: "Internal Server Error", 
+            success: false,
+            error: errorMessage 
+        }, { status: 500 })
     }
 }
