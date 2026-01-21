@@ -5,6 +5,7 @@ import ChildComponent from "./ChildComponent";
 import { getProjects } from "@/app/actions/getProjects";
 import { getVoices } from "@/app/actions/getVoices";
 import { authOptions } from "@/app/api/auth/[...nextauth]/authOptions";
+import { Project } from "./DashboardSidebarContent";
 
 export default async function DashboardPage(){
     const session = await getServerSession(authOptions);
@@ -14,7 +15,7 @@ export default async function DashboardPage(){
 
     const data = await getProjects();
     
-    const projects = data.projects?.map(project => ({
+    const projects = data.projects?.map((project: Project )=> ({
         ...project,
         createdAt: project.createdAt.toISOString(),
         updatedAt: project.updatedAt.toISOString(),

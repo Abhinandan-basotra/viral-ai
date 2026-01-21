@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Loader, Trash } from "lucide-react";
 import { toast } from "react-toastify";
 
-interface Project {
+export interface Project {
   progress: number;
   id: string;
   userId: string;
