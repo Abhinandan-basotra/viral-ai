@@ -3,7 +3,6 @@
 import { downloadFile } from "@/app/lib/downloadFiles";
 import prisma from "@/app/lib/db";
 import ffmpeg from "fluent-ffmpeg";
-import { getDuration } from "@/app/lib/ffmpegUtils";
 import fs from "fs";
 import { uploadVideoToCloudinary } from "@/app/lib/cloudinary/uploadVideoToCloudinary";
 import path from "path";

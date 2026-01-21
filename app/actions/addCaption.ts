@@ -2,7 +2,6 @@
 import { downloadFile } from "../lib/downloadFiles";
 import { convert_speech_to_text } from "./speech-to-text";
 import ffmpeg from 'fluent-ffmpeg';
-import { getDuration } from "@/app/lib/ffmpegUtils";
 import prisma from "../lib/db";
 import { uploadVideoToCloudinary } from "../lib/cloudinary/uploadVideoToCloudinary";
 import fs from 'fs';
