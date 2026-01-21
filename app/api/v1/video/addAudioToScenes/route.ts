@@ -1,80 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db";
 import ffmpeg from "fluent-ffmpeg";
-import ffmpegPath from "ffmpeg-static";
-import ffprobePath from "ffprobe-static";
-import { spawn } from "child_process";
 import { downloadFile } from "@/app/lib/downloadFiles";
 import { cloudinary } from "@/app/lib/cloudinary/cloudinary";
 import fs from 'fs'
 import path from "path";
-
-// Set the paths for ffmpeg and ffprobe using direct paths
-if (ffmpegPath) {
-  ffmpeg.setFfmpegPath(ffmpegPath);
-  console.log('FFmpeg path set to:', ffmpegPath);
-} else {
-  console.error('FFmpeg static path not found');
-}
-
-if (ffprobePath) {
-  ffmpeg.setFfprobePath(ffprobePath.path);
-  console.log('FFprobe path set to:', ffprobePath.path);
-} else {
-  console.error('FFprobe static path not found');
-}
+import { getDuration } from "@/app/lib/ffmpegUtils";
 
 interface MergeInterface {
   imagePath: string,
   audioPath: string,
   index: number,
   duration: number
-}
-
-async function getAudioDuration(audioPath: string): Promise<number> {
-    return new Promise((resolve, reject) => {
-        // First check if file exists
-        if (!fs.existsSync(audioPath)) {
-            reject(new Error(`Audio file not found: ${audioPath}`));
-            return;
-        }
-
-        // Use direct spawn call for better reliability
-        const ffprobe = spawn(ffprobePath.path, [
-            "-v", "error",
-            "-show_entries", "format=duration",
-            "-of", "default=noprint_wrappers=1:nokey=1",
-            audioPath
-        ]);
-
-        let output = '';
-        let errorOutput = '';
-
-        ffprobe.stdout.on('data', (data) => {
-            output += data.toString();
-        });
-
-        ffprobe.stderr.on('data', (data) => {
-            errorOutput += data.toString();
-        });
-
-        ffprobe.on('close', (code) => {
-            if (code === 0) {
-                const duration = parseFloat(output.trim());
-                if (isNaN(duration)) {
-                    reject(new Error(`Invalid duration output: ${output}`));
-                } else {
-                    resolve(duration);
-                }
-            } else {
-                reject(new Error(`FFprobe failed with code ${code}: ${errorOutput}`));
-            }
-        });
-
-        ffprobe.on('error', (err) => {
-            reject(new Error(`FFprobe spawn error: ${err.message}`));
-        });
-    });
 }
 
 
@@ -152,43 +89,7 @@ async function mergeVideos(
   temp2: string,
   output: string,
 ) {
-  const duration1 = await new Promise<number>((resolve, reject) => {
-    // Use direct spawn call for getting duration
-    const ffprobe = spawn(ffprobePath.path, [
-      "-v", "error",
-      "-show_entries", "format=duration",
-      "-of", "default=noprint_wrappers=1:nokey=1",
-      temp1
-    ]);
-
-    let output = '';
-    let errorOutput = '';
-
-    ffprobe.stdout.on('data', (data) => {
-      output += data.toString();
-    });
-
-    ffprobe.stderr.on('data', (data) => {
-      errorOutput += data.toString();
-    });
-
-    ffprobe.on('close', (code) => {
-      if (code === 0) {
-        const duration = parseFloat(output.trim());
-        if (isNaN(duration)) {
-          reject(new Error(`Invalid duration output: ${output}`));
-        } else {
-          resolve(duration);
-        }
-      } else {
-        reject(new Error(`FFprobe failed with code ${code}: ${errorOutput}`));
-      }
-    });
-
-    ffprobe.on('error', (err) => {
-      reject(new Error(`FFprobe spawn error: ${err.message}`));
-    });
-  });
+  const duration1 = await getDuration(temp1);
 
   const fadeDur = 0.5;
   const overlapStart = Math.max(0, duration1 - fadeDur);
@@ -266,7 +167,7 @@ export async function POST(req: NextRequest) {
             throw new Error(`Audio file not found after download: ${audioPath}`);
         }
 
-        const duration: number = await getAudioDuration(audioPath)
+        const duration: number = await getDuration(audioPath)
 
         const output = await mergeImageWithAudios({ imagePath, audioPath, index: scene.sceneNumber, duration });
         fs.unlinkSync(imagePath);

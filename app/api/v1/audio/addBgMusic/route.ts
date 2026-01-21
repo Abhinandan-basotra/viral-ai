@@ -2,17 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db";
 import fs from "fs";
 import ffmpeg from 'fluent-ffmpeg';
-import ffmpegStatic from 'ffmpeg-static';
-import ffprobeStatic from 'ffprobe-static';
+import { getDuration } from "@/app/lib/ffmpegUtils";
 import { downloadFile } from "@/app/lib/downloadFiles";
 import { uploadAudioToCloudinary } from "@/app/lib/cloudinary/uploadAudioToCloudinary";
-
-if (ffmpegStatic) {
-  ffmpeg.setFfmpegPath(ffmpegStatic);
-}
-if (ffprobeStatic) {
-  ffmpeg.setFfprobePath(ffprobeStatic.path);
-}
 
 export async function POST(req: NextRequest) {
     try {
@@ -49,12 +41,7 @@ export async function POST(req: NextRequest) {
                 ]);
             }
 
-            const voiceDuration = await new Promise<number>((resolve, reject) => {
-                ffmpeg.ffprobe(voicePath, (err, metadata) => {
-                    if (err) reject(err);
-                    else resolve(metadata.format.duration || 0);
-                });
-            });
+            const voiceDuration = await getDuration(voicePath);
 
             const mergedUrl = await new Promise<string>((resolve, reject) => {
                 ffmpeg()

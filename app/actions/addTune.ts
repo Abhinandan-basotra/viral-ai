@@ -3,9 +3,7 @@
 import { downloadFile } from "@/app/lib/downloadFiles";
 import prisma from "@/app/lib/db";
 import ffmpeg from "fluent-ffmpeg";
-import ffmpegPath from "ffmpeg-static";
-import ffprobePath from "ffprobe-static";
-import { spawn } from "child_process";
+import { getDuration } from "@/app/lib/ffmpegUtils";
 import fs from "fs";
 import { uploadVideoToCloudinary } from "@/app/lib/cloudinary/uploadVideoToCloudinary";
 import path from "path";
@@ -17,13 +15,6 @@ const paths = {
   finalAudioPath: "",
   finalVideoPath: "",
 };
-
-if (ffmpegPath) {
-  ffmpeg.setFfmpegPath(ffmpegPath);
-}
-if (ffprobePath) {
-  ffmpeg.setFfprobePath(ffprobePath.path);
-}
 
 export async function safeUnlinkSync(filePath?: string) {
   if (!filePath) return;
