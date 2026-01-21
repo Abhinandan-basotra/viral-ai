@@ -1,34 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/app/lib/db";
 import ffmpeg from "fluent-ffmpeg";
-import ffmpegStatic from 'ffmpeg-static';
-import ffprobeStatic from 'ffprobe-static';
+import ffmpegPath from "ffmpeg-static";
+import ffprobePath from "ffprobe-static";
+import { spawn } from "child_process";
 import { downloadFile } from "@/app/lib/downloadFiles";
 import { cloudinary } from "@/app/lib/cloudinary/cloudinary";
 import fs from 'fs'
 import path from "path";
 
-// Set the paths for ffmpeg and ffprobe with proper error handling
-if (ffmpegStatic) {
-  ffmpeg.setFfmpegPath(ffmpegStatic);
-  console.log('FFmpeg path set to:', ffmpegStatic);
+// Set the paths for ffmpeg and ffprobe using direct paths
+if (ffmpegPath) {
+  ffmpeg.setFfmpegPath(ffmpegPath);
+  console.log('FFmpeg path set to:', ffmpegPath);
 } else {
   console.error('FFmpeg static path not found');
 }
 
-if (ffprobeStatic && ffprobeStatic.path) {
-  ffmpeg.setFfprobePath(ffprobeStatic.path);
-  console.log('FFprobe path set to:', ffprobeStatic.path);
+if (ffprobePath) {
+  ffmpeg.setFfprobePath(ffprobePath.path);
+  console.log('FFprobe path set to:', ffprobePath.path);
 } else {
-  console.error('FFprobe static path not found, attempting fallback');
-  // Try alternative path for Vercel
-  const ffprobePath = path.join(process.cwd(), 'node_modules', 'ffprobe-static', 'bin', 'linux', 'x64', 'ffprobe');
-  if (fs.existsSync(ffprobePath)) {
-    ffmpeg.setFfprobePath(ffprobePath);
-    console.log('FFprobe fallback path set to:', ffprobePath);
-  } else {
-    console.error('FFprobe not found at fallback path either');
-  }
+  console.error('FFprobe static path not found');
 }
 
 interface MergeInterface {
@@ -46,21 +39,40 @@ async function getAudioDuration(audioPath: string): Promise<number> {
             return;
         }
 
-        ffmpeg.ffprobe(audioPath, (err, metadata) => {
-            if (err) {
-                console.error('FFprobe error:', err);
-                // Fallback: try to get duration from ffmpeg directly
-                ffmpeg.ffprobe(audioPath, (probeErr, probeMetadata) => {
-                    if (probeErr) {
-                        console.error('FFprobe fallback also failed:', probeErr);
-                        reject(new Error(`Failed to get audio duration: ${probeErr.message}`));
-                    } else {
-                        resolve(probeMetadata.format.duration as number);
-                    }
-                });
+        // Use direct spawn call for better reliability
+        const ffprobe = spawn(ffprobePath.path, [
+            "-v", "error",
+            "-show_entries", "format=duration",
+            "-of", "default=noprint_wrappers=1:nokey=1",
+            audioPath
+        ]);
+
+        let output = '';
+        let errorOutput = '';
+
+        ffprobe.stdout.on('data', (data) => {
+            output += data.toString();
+        });
+
+        ffprobe.stderr.on('data', (data) => {
+            errorOutput += data.toString();
+        });
+
+        ffprobe.on('close', (code) => {
+            if (code === 0) {
+                const duration = parseFloat(output.trim());
+                if (isNaN(duration)) {
+                    reject(new Error(`Invalid duration output: ${output}`));
+                } else {
+                    resolve(duration);
+                }
             } else {
-                resolve(metadata.format.duration as number);
+                reject(new Error(`FFprobe failed with code ${code}: ${errorOutput}`));
             }
+        });
+
+        ffprobe.on('error', (err) => {
+            reject(new Error(`FFprobe spawn error: ${err.message}`));
         });
     });
 }
@@ -141,12 +153,40 @@ async function mergeVideos(
   output: string,
 ) {
   const duration1 = await new Promise<number>((resolve, reject) => {
-    ffmpeg.ffprobe(temp1, (err, metadata) => {
-      if (err){
-        console.error(err);
-        return reject(err);
+    // Use direct spawn call for getting duration
+    const ffprobe = spawn(ffprobePath.path, [
+      "-v", "error",
+      "-show_entries", "format=duration",
+      "-of", "default=noprint_wrappers=1:nokey=1",
+      temp1
+    ]);
+
+    let output = '';
+    let errorOutput = '';
+
+    ffprobe.stdout.on('data', (data) => {
+      output += data.toString();
+    });
+
+    ffprobe.stderr.on('data', (data) => {
+      errorOutput += data.toString();
+    });
+
+    ffprobe.on('close', (code) => {
+      if (code === 0) {
+        const duration = parseFloat(output.trim());
+        if (isNaN(duration)) {
+          reject(new Error(`Invalid duration output: ${output}`));
+        } else {
+          resolve(duration);
+        }
+      } else {
+        reject(new Error(`FFprobe failed with code ${code}: ${errorOutput}`));
       }
-      resolve(metadata.format.duration as number);
+    });
+
+    ffprobe.on('error', (err) => {
+      reject(new Error(`FFprobe spawn error: ${err.message}`));
     });
   });
 
