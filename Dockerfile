@@ -17,11 +17,11 @@ RUN npm install
 # Copy source code
 COPY . .
 
+# Generate Prisma client
+RUN npx prisma generate
+
 # Build Next.js
 RUN npm run build
-
-# Generate Prisma client with correct binary targets
-RUN npx prisma generate
 
 # Expose port
 EXPOSE 3000

@@ -19,7 +19,7 @@ export interface Project {
   tuneId: number | null;
   hasTune: boolean;
   hasCaption: boolean;
-}
+};
 
 export default async function DashboardSidebarContent() {
   let loading = true;
