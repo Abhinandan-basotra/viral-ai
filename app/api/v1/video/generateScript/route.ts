@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
 Write a narration (~${expectedVideoLength * 2} words) for a YouTube short.
 Topic: ${idea}
 Make it cinematic, emotional, and inspiring.
-Only write the narration text. No labels. No scene descriptions. No abuses
+Only write the narration text. No labels. No scene descriptions. No abuses. Avoid trigger words like bleed, violence
 Start with a strong hook and end with a powerful message.
 
 eg:-  title: write a story script for a student who is going to his school.
