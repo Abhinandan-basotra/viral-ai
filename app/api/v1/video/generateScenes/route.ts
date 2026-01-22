@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
         const voiceId = data.voiceId;
         const tuneId = data.tuneId;
         const baseUrl = process.env.BASE_URL;
+        const vercel_url = process.env.VERCEL_URL;
 
 
         await updateProjectStatus(projectId, "Generating Scenes");
@@ -146,9 +147,9 @@ Your task is to break down the given script into a list of visually compelling s
         const finalOutputPath = `/tmp/finalOutput_${projectId}.mp4`;
         const totalScenes = scenes.length;
         for (let i = 0; i < totalScenes; i++) {
-            if(await isCancelled(projectId)){
+            if (await isCancelled(projectId)) {
                 await deleteVideo(projectId, finalOutputPath);
-                return NextResponse.json({message: 'Cancelled', success: false})
+                return NextResponse.json({ message: 'Cancelled', success: false })
             }
             const scene = scenes[i];
             //making assets according to scene
@@ -186,21 +187,23 @@ Your task is to break down the given script into a list of visually compelling s
                 throw new Error("Audio not found")
             }
 
-            const audioRes = await fetch(`${baseUrl}/api/v1/audio/generateVoice`, {
-                method: 'POST',
-                headers: {
-                    "Content-type": "application/json",
-                    "Accept": "application/json"
-                },
-                body: JSON.stringify({
-                    voice: voiceId,
-                    audioId: audio.id,
-                    audioText: audio.text
-                })
-            })
+            const audioRes = await fetch(
+                `${vercel_url}/api/v1/audio/generateVoice`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        voice: voiceId,
+                        audioText: scene.description,
+                    }),
+                }
+            );
 
-            const audioData = await audioRes.json();
-            const audioUrl = audioData.audio;
+            const audiotemp = await audioRes.json();
+            const audioUrl = audiotemp.audioUrl;
+            
+            await prisma.audio.update({where: {id: audio.id}, data: {url: audioUrl}});
+            
 
 
             //adding audio, animation to the scenes
@@ -222,12 +225,12 @@ Your task is to break down the given script into a list of visually compelling s
             const mergeData = await mergeRes.json();
             projectProgress = Number(mergeData.sceneEndTime);
             await updateSceneStatus(scene.id, "Generated");
-            
+
             // Check if final output file exists before uploading
             if (!fs.existsSync(finalOutputPath)) {
                 throw new Error(`Final output file not found: ${finalOutputPath}`);
             }
-            
+
             const finalOutputRes = await uploadVideoToCloudinary(new Blob([fs.readFileSync(finalOutputPath)]), "final");
             await prisma.project.update({
                 where: {
@@ -235,7 +238,7 @@ Your task is to break down the given script into a list of visually compelling s
                 },
                 data: {
                     finalUrl: finalOutputRes,
-                    progress: ((i+1)*100)/totalScenes,
+                    progress: ((i + 1) * 100) / totalScenes,
                     title: title,
                     tuneId: tuneId ? parseInt(tuneId, 10) : null
                 }
@@ -251,20 +254,20 @@ Your task is to break down the given script into a list of visually compelling s
             }
         } catch (cleanupError) {
             console.error('Error cleaning up final output file:', cleanupError);
-        }  
+        }
 
 
         return NextResponse.json({ message: "Scenes and Images Generated", success: true, scenes: generatedScenes });
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         const errorStack = error instanceof Error ? error.stack : undefined;
-        
+
         console.error('Generate Scenes Error:', {
             message: errorMessage,
             stack: errorStack,
             projectId: data?.projectId || 'unknown'
         });
-        
+
         // Clean up final output file on error
         const finalOutputPath = `/tmp/finalOutput_${data?.projectId || 'unknown'}.mp4`;
         try {
@@ -274,11 +277,11 @@ Your task is to break down the given script into a list of visually compelling s
         } catch (cleanupError) {
             console.error('Error cleaning up during error handling:', cleanupError);
         }
-        
-        return NextResponse.json({ 
-            message: "Internal Server Error", 
+
+        return NextResponse.json({
+            message: "Internal Server Error",
             success: false,
-            error: errorMessage 
+            error: errorMessage
         }, { status: 500 })
     }
 }
