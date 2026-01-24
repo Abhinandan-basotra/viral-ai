@@ -216,7 +216,7 @@ Your task is to break down the given script into a list of visually compelling s
                 body: JSON.stringify({
                     audioUrl: audioUrl,
                     imageUrl: data.url,
-                    scene: scene,
+                    sceneId: scene.id,
                     progress: projectProgress,
                     outputPath: finalOutputPath,
                     index: i
