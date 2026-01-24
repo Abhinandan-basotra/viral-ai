@@ -194,7 +194,7 @@ Your task is to break down the given script into a list of visually compelling s
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         voice: voiceId,
-                        audioText: scene.description,
+                        audioText: audio.text,
                     }),
                 }
             );
